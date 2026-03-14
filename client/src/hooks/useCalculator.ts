@@ -1,14 +1,13 @@
 import { useState, useMemo } from 'react';
 
 /* ===================================================================
- * 營建雙平台資金缺口與稅務套利試算 — 計算引擎 v2
+ * 營建雙平台資金缺口與稅務套利試算 — 計算引擎 v3
  *
- * 關鍵區分：
- * - 「資金流」：建融、預收款、代辦費 → 用於計算資金缺口
- * - 「會計收入」：建案總銷售金額 → 用於計算稅務
- *
- * 建融是借款不是收入，客戶貸款撥款後歸還建融。
- * 建案總銷售金額 = 所有戶別的合約總價（含稅）
+ * 新增銷售完成率與動態連結：
+ * - 銷售完成率：決定實際銷售金額
+ * - 預收房屋款比例：銷售金額 × 預收比例
+ * - 銷售費用比例：銷售金額 × 銷售費用比例
+ * - 節稅操作：原多開發票功能改名
  * =================================================================== */
 
 export interface ProjectInputs {
@@ -16,8 +15,11 @@ export interface ProjectInputs {
   totalUnits: number;
   agencyFeePerUnit: number;
 
-  // ── 建案銷售（會計用）──
-  totalSalesAmount: number;       // 建案總銷售金額（含稅）- 用於稅務計算
+  // ── 銷售參數（動態連結）──
+  totalSalesAmount: number;         // 建案總銷售金額（含稅）
+  salesCompletionRate: number;      // 銷售完成率（0-1）
+  preSaleRevenueRate: number;       // 預收房屋款比例（0-1）
+  salesFeeRate: number;             // 銷售費用比例（0-1）
 
   // ── 建設總支出（實際成本）──
   constructionCost: number;
@@ -26,7 +28,6 @@ export interface ProjectInputs {
 
   // ── 建設資金流入（資金缺口用）──
   constructionLoan: number;
-  preSaleRevenue: number;
 
   // ── 可延後付款項目 ──
   steelMaterial: number;
@@ -36,10 +37,10 @@ export interface ProjectInputs {
   constructorFixedExpense: number;
   agencyPostDeliveryPct: number;
 
-  // ── 多開發票設定 ──
-  extraInvoiceConstructor: number;
+  // ── 節稅操作設定 ──
+  taxSavingConstructor: number;
   constructorDeferredPct: number;
-  extraInvoiceConstruction: number;
+  taxSavingConstruction: number;
 
   // ── 稅率參數 ──
   constructorIncomeStd: number;
@@ -77,7 +78,7 @@ export interface TaxAnalysis {
   cTotalTaxAfter: number;
   cEffRateAfter: number;
 
-  // 營造廠（多開部分）
+  // 營造廠（節稅部分）
   bRevenue: number;
   bTaxableIncome: number;
   bCorpTax: number;
@@ -95,8 +96,14 @@ export interface TaxAnalysis {
 
 export interface CalculationResult {
   actual: ScenarioResult;
-  invoice: ScenarioResult;
+  taxSaving: ScenarioResult;
   tax: TaxAnalysis;
+  salesInfo: {
+    actualSalesAmount: number;
+    preSaleRevenue: number;
+    salesFee: number;
+    agencyFeeTotal: number;
+  };
 }
 
 const defaultInputs: ProjectInputs = {
@@ -104,14 +111,16 @@ const defaultInputs: ProjectInputs = {
   totalUnits: 32,
   agencyFeePerUnit: 200000,
 
-  totalSalesAmount: 350000000,  // 建案總銷售金額（含稅）
+  totalSalesAmount: 350000000,
+  salesCompletionRate: 1.0,         // 100% 完銷
+  preSaleRevenueRate: 0.15,         // 預收 15%
+  salesFeeRate: 0.05,               // 銷售費用 5%
 
   constructionCost: 218991554,
   advertisingFee: 27205750,
   constructionLoanInterest: 4702500,
 
   constructionLoan: 104500000,
-  preSaleRevenue: 74820000,
 
   steelMaterial: 20703712,
   publicLobby: 3150000,
@@ -120,9 +129,9 @@ const defaultInputs: ProjectInputs = {
   constructorFixedExpense: 5600000,
   agencyPostDeliveryPct: 0.4,
 
-  extraInvoiceConstructor: 60000000,
+  taxSavingConstructor: 60000000,
   constructorDeferredPct: 0.15,
-  extraInvoiceConstruction: 5000000,
+  taxSavingConstruction: 5000000,
 
   constructorIncomeStd: 0.08,
   corpTaxRate: 0.20,
@@ -140,12 +149,18 @@ export function useCalculator() {
 
   const result = useMemo<CalculationResult>(() => {
     const i = inputs;
+
+    // ═══ 銷售參數計算 ═══
+    const actualSalesAmount = i.totalSalesAmount * i.salesCompletionRate;
+    const preSaleRevenue = actualSalesAmount * i.preSaleRevenueRate;
+    const salesFee = actualSalesAmount * i.salesFeeRate;
     const agencyFeeTotal = i.agencyFeePerUnit * i.totalUnits;
-    const agencyDeferred = i.advertisingFee * i.agencyPostDeliveryPct;
 
     // ═══ 情境一：實際成本（資金缺口）═══
     const actualExpense = i.constructionCost + i.advertisingFee + i.constructionLoanInterest;
-    const actualRevenue = i.constructionLoan + i.preSaleRevenue + agencyFeeTotal;
+    const actualRevenue = i.constructionLoan + preSaleRevenue + agencyFeeTotal;
+
+    const agencyDeferred = i.advertisingFee * i.agencyPostDeliveryPct;
 
     const actualDeferredItems: DeferredItem[] = [
       { label: '鋼筋材料', amount: i.steelMaterial },
@@ -158,30 +173,28 @@ export function useCalculator() {
     const actualDeferred = actualDeferredItems.reduce((s, d) => s + d.amount, 0);
     const actualGap = actualExpense - actualRevenue - actualDeferred;
 
-    // ═══ 情境二：多開發票（資金缺口）═══
-    const totalExtra = i.extraInvoiceConstructor + i.extraInvoiceConstruction;
-    const invoiceExpense = actualExpense + totalExtra;
-    const invoiceRevenue = actualRevenue;
+    // ═══ 情境二：節稅操作（資金缺口）═══
+    const totalTaxSaving = i.taxSavingConstructor + i.taxSavingConstruction;
+    const taxSavingExpense = actualExpense + totalTaxSaving;
+    const taxSavingRevenue = actualRevenue;
 
-    const constructorExtraDeferred = i.extraInvoiceConstructor * i.constructorDeferredPct;
+    const constructorExtraDeferred = i.taxSavingConstructor * i.constructorDeferredPct;
 
-    const invoiceDeferredItems: DeferredItem[] = [
+    const taxSavingDeferredItems: DeferredItem[] = [
       { label: '鋼筋材料', amount: i.steelMaterial },
       { label: '公設大廳', amount: i.publicLobby },
       { label: '部分廠商交屋尾款', amount: i.vendorFinalPayment },
       { label: '建物登記/代書/記帳費', amount: i.registrationFees },
       { label: '營造廠固定支出', amount: i.constructorFixedExpense },
       { label: '代銷交屋後支付', amount: agencyDeferred },
-      { label: '營造廠多開延後付款', amount: constructorExtraDeferred },
-      { label: '建設端多開延後（廚具衛浴）', amount: i.extraInvoiceConstruction },
+      { label: '營造廠節稅延後付款', amount: constructorExtraDeferred },
+      { label: '建設端節稅延後（廚具衛浴）', amount: i.taxSavingConstruction },
     ];
-    const invoiceDeferred = invoiceDeferredItems.reduce((s, d) => s + d.amount, 0);
-    const invoiceGap = invoiceExpense - invoiceRevenue - invoiceDeferred;
+    const taxSavingDeferred = taxSavingDeferredItems.reduce((s, d) => s + d.amount, 0);
+    const taxSavingGap = taxSavingExpense - taxSavingRevenue - taxSavingDeferred;
 
     // ═══ 稅務分析（使用會計收入）═══
-    // 建設公司銷售收入 = 建案總銷售金額（會計上的營業收入）
-    const salesRevenue = i.totalSalesAmount;
-    // 建設公司成本（不含多開）
+    const salesRevenue = actualSalesAmount;
     const baseCost = i.constructionCost + i.advertisingFee + i.constructionLoanInterest;
 
     // 建設公司（未節稅）
@@ -192,14 +205,14 @@ export function useCalculator() {
     const cEffRate = cProfit > 0 ? (cTotalTax / cProfit) * 100 : 0;
 
     // 建設公司（節稅後）
-    const cProfitAfter = Math.max(salesRevenue - baseCost - totalExtra, 0);
+    const cProfitAfter = Math.max(salesRevenue - baseCost - totalTaxSaving, 0);
     const cCorpTaxAfter = cProfitAfter * i.corpTaxRate;
     const cDividendTaxAfter = (cProfitAfter - cCorpTaxAfter) * i.dividendTaxRate;
     const cTotalTaxAfter = cCorpTaxAfter + cDividendTaxAfter;
     const cEffRateAfter = cProfitAfter > 0 ? (cTotalTaxAfter / cProfitAfter) * 100 : 0;
 
-    // 營造廠（多開部分）
-    const bRevenue = totalExtra;
+    // 營造廠（節稅部分）
+    const bRevenue = totalTaxSaving;
     const bTaxableIncome = bRevenue * i.constructorIncomeStd;
     const bCorpTax = bTaxableIncome * i.corpTaxRate;
     const bDividendTax = (bTaxableIncome - bCorpTax) * i.dividendTaxRate;
@@ -210,7 +223,7 @@ export function useCalculator() {
     const totalBefore = cTotalTax;
     const totalAfter = cTotalTaxAfter + bTotalTax;
     const taxSaved = totalBefore - totalAfter;
-    const gapIncrease = invoiceGap - actualGap;
+    const gapIncrease = taxSavingGap - actualGap;
     const netBenefit = taxSaved - gapIncrease;
 
     return {
@@ -221,12 +234,12 @@ export function useCalculator() {
         fundingGap: actualGap,
         deferredBreakdown: actualDeferredItems,
       },
-      invoice: {
-        totalExpense: invoiceExpense,
-        totalRevenue: invoiceRevenue,
-        deferredPayment: invoiceDeferred,
-        fundingGap: invoiceGap,
-        deferredBreakdown: invoiceDeferredItems,
+      taxSaving: {
+        totalExpense: taxSavingExpense,
+        totalRevenue: taxSavingRevenue,
+        deferredPayment: taxSavingDeferred,
+        fundingGap: taxSavingGap,
+        deferredBreakdown: taxSavingDeferredItems,
       },
       tax: {
         salesRevenue, baseCost,
@@ -234,6 +247,12 @@ export function useCalculator() {
         cProfitAfter, cCorpTaxAfter, cDividendTaxAfter, cTotalTaxAfter, cEffRateAfter,
         bRevenue, bTaxableIncome, bCorpTax, bDividendTax, bTotalTax, bEffRate,
         totalBefore, totalAfter, taxSaved, gapIncrease, netBenefit,
+      },
+      salesInfo: {
+        actualSalesAmount,
+        preSaleRevenue,
+        salesFee,
+        agencyFeeTotal,
       },
     };
   }, [inputs]);
