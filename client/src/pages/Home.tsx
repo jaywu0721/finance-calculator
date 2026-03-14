@@ -281,7 +281,7 @@ export default function Home() {
           <section className="bg-card border border-border rounded-xl p-5 space-y-4">
             <div className="flex items-center gap-2 pb-3 border-b border-border">
               <div className="w-3 h-3 rounded-full bg-accent" />
-              <h3 className="text-sm font-semibold">情境二：多開發票（節稅操作）</h3>
+              <h3 className="text-sm font-semibold">情境二：節稅操作</h3>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <ResultCard label="建設總支出（含多開）" value={result.invoice.totalExpense} variant="negative" />
