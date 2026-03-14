@@ -397,7 +397,7 @@ export default function Home() {
               試算結論
             </p>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              透過多開發票 <span className="font-mono text-accent font-bold">{formatCurrency(inputs.extraInvoiceConstructor + inputs.extraInvoiceConstruction)}</span> 元，
+              透過節稅操作多出 <span className="font-mono text-accent font-bold">{formatCurrency(inputs.extraInvoiceConstructor + inputs.extraInvoiceConstruction)}</span> 元，
               建設公司淨利從 <span className="font-mono font-bold">{formatCurrency(result.tax.cProfit)}</span> 降至{' '}
               <span className="font-mono font-bold">{formatCurrency(result.tax.cProfitAfter)}</span> 元。
               節省稅金約 <span className="font-mono text-primary font-bold">{formatCurrency(result.tax.taxSaved)}</span> 元，
