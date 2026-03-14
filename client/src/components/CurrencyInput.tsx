@@ -8,9 +8,10 @@ interface CurrencyInputProps {
   suffix?: string;
   className?: string;
   hint?: string;
+  decimals?: number;
 }
 
-export default function CurrencyInput({ label, value, onChange, suffix = '元', className = '', hint }: CurrencyInputProps) {
+export default function CurrencyInput({ label, value, onChange, suffix = '元', className = '', hint, decimals = 0 }: CurrencyInputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const [displayValue, setDisplayValue] = useState(value.toString());
   const inputRef = useRef<HTMLInputElement>(null);
@@ -44,7 +45,7 @@ export default function CurrencyInput({ label, value, onChange, suffix = '元', 
         <input
           ref={inputRef}
           type={isFocused ? 'number' : 'text'}
-          value={isFocused ? displayValue : formatCurrency(value)}
+          value={isFocused ? displayValue : formatCurrency(value, decimals)}
           onFocus={handleFocus}
           onBlur={handleBlur}
           onChange={handleChange}

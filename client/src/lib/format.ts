@@ -1,7 +1,8 @@
-export function formatCurrency(value: number): string {
+export function formatCurrency(value: number, decimals = 0): string {
   return new Intl.NumberFormat('zh-TW', {
     style: 'decimal',
-    maximumFractionDigits: 0,
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
   }).format(value);
 }
 

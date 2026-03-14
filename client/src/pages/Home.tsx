@@ -99,18 +99,12 @@ export default function Home() {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4 print:gap-2">
               <CurrencyInput
-                label="銷售完成率"
+                label="銀選完成率"
                 value={inputs.salesCompletionRate * 100}
                 onChange={v => updateInput('salesCompletionRate', v / 100)}
                 suffix="%"
                 hint="100% 表示全部完銷"
-              />
-              <CurrencyInput
-                label="預收房屋款比例"
-                value={inputs.preSaleRevenueRate * 100}
-                onChange={v => updateInput('preSaleRevenueRate', v / 100)}
-                suffix="%"
-                hint="施工期間預收比例"
+                decimals={1}
               />
               <CurrencyInput
                 label="代銷費用比例"
@@ -118,6 +112,7 @@ export default function Home() {
                 onChange={v => updateInput('agencyFeeRate', v / 100)}
                 suffix="%"
                 hint="代銷、廣告等費用"
+                decimals={1}
               />
               <div className="bg-secondary/30 border border-border rounded-lg p-4 print:border-0 print:bg-transparent">
                 <p className="text-xs text-muted-foreground mb-1">實際銷售金額</p>
@@ -225,6 +220,7 @@ export default function Home() {
                 onChange={v => updateInput('constructorDeferredPct', v / 100)}
                 suffix="%"
                 hint="營造廠合約 15-20%"
+                decimals={1}
               />
               <CurrencyInput label="建設端節稅金額" value={inputs.taxSavingConstruction} onChange={v => updateInput('taxSavingConstruction', v)} hint="廚具、衛浴等建設端自行發包" />
             </div>
