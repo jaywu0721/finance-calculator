@@ -113,9 +113,9 @@ export default function Home() {
                 hint="施工期間預收比例"
               />
               <CurrencyInput
-                label="銷售費用比例"
-                value={inputs.salesFeeRate * 100}
-                onChange={v => updateInput('salesFeeRate', v / 100)}
+                label="代銷費用比例"
+                value={inputs.agencyFeeRate * 100}
+                onChange={v => updateInput('agencyFeeRate', v / 100)}
                 suffix="%"
                 hint="代銷、廣告等費用"
               />
@@ -130,8 +130,8 @@ export default function Home() {
                 <span className="font-mono">{formatCurrency(result.salesInfo.preSaleRevenue)}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">銷售費用</span>
-                <span className="font-mono">{formatCurrency(result.salesInfo.salesFee)}</span>
+                <span className="text-muted-foreground">代銷費用</span>
+                <span className="font-mono">{formatCurrency(result.salesInfo.agencyFee)}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">客戶代辦費收入</span>
@@ -148,7 +148,6 @@ export default function Home() {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 print:grid-cols-3 print:gap-2">
               <CurrencyInput label="施工成本估算（含稅）" value={inputs.constructionCost} onChange={v => updateInput('constructionCost', v)} />
-              <CurrencyInput label="廣告費（含稅）" value={inputs.advertisingFee} onChange={v => updateInput('advertisingFee', v)} />
               <CurrencyInput label="建融利息支出" value={inputs.constructionLoanInterest} onChange={v => updateInput('constructionLoanInterest', v)} />
             </div>
             <div className="mt-4 pt-4 border-t border-border print:border-t print:mt-2 print:pt-2">
@@ -201,7 +200,7 @@ export default function Home() {
               <CurrencyInput label="營造廠固定支出" value={inputs.constructorFixedExpense} onChange={v => updateInput('constructorFixedExpense', v)} hint="營造廠自行負擔" />
               <div className="bg-secondary/30 border border-border rounded-lg p-4 print:border-0 print:bg-transparent">
                 <p className="text-xs text-muted-foreground mb-1">代銷交屋後支付（自動計算）</p>
-                <p className="font-mono font-bold text-lg text-accent">{formatCurrency(inputs.advertisingFee * inputs.agencyPostDeliveryPct)}</p>
+                <p className="font-mono font-bold text-lg text-accent">{formatCurrency(result.salesInfo.agencyFee * inputs.agencyPostDeliveryPct)}</p>
               </div>
             </div>
             <div className="mt-4 pt-4 border-t border-border print:border-t print:mt-2 print:pt-2">
@@ -236,9 +235,17 @@ export default function Home() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">營造廠延後付款金額</span>
-                <span className="font-mono font-bold text-accent">{formatCurrency(inputs.taxSavingConstructor * inputs.constructorDeferredPct)} 元</span>
+                <span className="font-mono font-bold text-accent">{formatCurrency((inputs.constructionCost + inputs.taxSavingConstructor) * inputs.constructorDeferredPct)} 元</span>
               </div>
             </div>
+            {result.warnings.constructorOverflow && (
+              <div className="mt-4 bg-destructive/10 border border-destructive/30 rounded-lg p-3 text-sm text-destructive print:bg-red-100 print:border-red-300 print:text-red-700 print:p-2 print:text-[10px]">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <p>{result.warnings.message}</p>
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           {/* 稅率參數 */}

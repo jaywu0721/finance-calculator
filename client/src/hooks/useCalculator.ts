@@ -1,13 +1,12 @@
 import { useState, useMemo } from 'react';
 
 /* ===================================================================
- * 營建雙平台資金缺口與稅務套利試算 — 計算引擎 v3
+ * 營建雙平台資金缺口與稅務套利試算 — 計算引擎 v4
  *
- * 新增銷售完成率與動態連結：
- * - 銷售完成率：決定實際銷售金額
- * - 預收房屋款比例：銷售金額 × 預收比例
- * - 銷售費用比例：銷售金額 × 銷售費用比例
- * - 節稅操作：原多開發票功能改名
+ * 關鍵修正：
+ * - 代銷費用 = 建案總銷售金額 × 代銷費用比例（自動成為廣告費）
+ * - 營造廠延後付款 = (施工成本估算 + 營造廠節稅金額) × 營造廠延後付款比例
+ * - 新增警示：營造廠節稅金額不應超過施工成本估算
  * =================================================================== */
 
 export interface ProjectInputs {
@@ -19,11 +18,10 @@ export interface ProjectInputs {
   totalSalesAmount: number;         // 建案總銷售金額（含稅）
   salesCompletionRate: number;      // 銷售完成率（0-1）
   preSaleRevenueRate: number;       // 預收房屋款比例（0-1）
-  salesFeeRate: number;             // 銷售費用比例（0-1）
+  agencyFeeRate: number;            // 代銷費用比例（0-1）- 自動成為廣告費
 
   // ── 建設總支出（實際成本）──
   constructionCost: number;
-  advertisingFee: number;
   constructionLoanInterest: number;
 
   // ── 建設資金流入（資金缺口用）──
@@ -101,8 +99,12 @@ export interface CalculationResult {
   salesInfo: {
     actualSalesAmount: number;
     preSaleRevenue: number;
-    salesFee: number;
+    agencyFee: number;
     agencyFeeTotal: number;
+  };
+  warnings: {
+    constructorOverflow: boolean;
+    message: string;
   };
 }
 
@@ -114,10 +116,9 @@ const defaultInputs: ProjectInputs = {
   totalSalesAmount: 350000000,
   salesCompletionRate: 1.0,         // 100% 完銷
   preSaleRevenueRate: 0.15,         // 預收 15%
-  salesFeeRate: 0.05,               // 銷售費用 5%
+  agencyFeeRate: 0.05,              // 代銷費用 5%
 
   constructionCost: 218991554,
-  advertisingFee: 27205750,
   constructionLoanInterest: 4702500,
 
   constructionLoan: 104500000,
@@ -153,14 +154,20 @@ export function useCalculator() {
     // ═══ 銷售參數計算 ═══
     const actualSalesAmount = i.totalSalesAmount * i.salesCompletionRate;
     const preSaleRevenue = actualSalesAmount * i.preSaleRevenueRate;
-    const salesFee = actualSalesAmount * i.salesFeeRate;
+    const agencyFee = actualSalesAmount * i.agencyFeeRate;  // 代銷費用 = 總銷金額 × 比例
     const agencyFeeTotal = i.agencyFeePerUnit * i.totalUnits;
 
+    // ═══ 檢查警示：營造廠節稅金額是否超過施工成本 ═══
+    const constructorOverflow = i.taxSavingConstructor > i.constructionCost;
+    const warningMessage = constructorOverflow
+      ? `⚠️ 警告：營造廠節稅金額 ${i.taxSavingConstructor.toLocaleString()} 超過施工成本估算 ${i.constructionCost.toLocaleString()}，請檢查設定`
+      : '';
+
     // ═══ 情境一：實際成本（資金缺口）═══
-    const actualExpense = i.constructionCost + i.advertisingFee + i.constructionLoanInterest;
+    const actualExpense = i.constructionCost + agencyFee + i.constructionLoanInterest;
     const actualRevenue = i.constructionLoan + preSaleRevenue + agencyFeeTotal;
 
-    const agencyDeferred = i.advertisingFee * i.agencyPostDeliveryPct;
+    const agencyDeferred = agencyFee * i.agencyPostDeliveryPct;
 
     const actualDeferredItems: DeferredItem[] = [
       { label: '鋼筋材料', amount: i.steelMaterial },
@@ -178,7 +185,9 @@ export function useCalculator() {
     const taxSavingExpense = actualExpense + totalTaxSaving;
     const taxSavingRevenue = actualRevenue;
 
-    const constructorExtraDeferred = i.taxSavingConstructor * i.constructorDeferredPct;
+    // 修正：營造廠延後付款 = (施工成本 + 營造廠節稅金額) × 延後比例
+    const constructorDeferredBase = i.constructionCost + i.taxSavingConstructor;
+    const constructorExtraDeferred = constructorDeferredBase * i.constructorDeferredPct;
 
     const taxSavingDeferredItems: DeferredItem[] = [
       { label: '鋼筋材料', amount: i.steelMaterial },
@@ -187,7 +196,7 @@ export function useCalculator() {
       { label: '建物登記/代書/記帳費', amount: i.registrationFees },
       { label: '營造廠固定支出', amount: i.constructorFixedExpense },
       { label: '代銷交屋後支付', amount: agencyDeferred },
-      { label: '營造廠節稅延後付款', amount: constructorExtraDeferred },
+      { label: '營造廠延後付款（含節稅）', amount: constructorExtraDeferred },
       { label: '建設端節稅延後（廚具衛浴）', amount: i.taxSavingConstruction },
     ];
     const taxSavingDeferred = taxSavingDeferredItems.reduce((s, d) => s + d.amount, 0);
@@ -195,7 +204,7 @@ export function useCalculator() {
 
     // ═══ 稅務分析（使用會計收入）═══
     const salesRevenue = actualSalesAmount;
-    const baseCost = i.constructionCost + i.advertisingFee + i.constructionLoanInterest;
+    const baseCost = i.constructionCost + agencyFee + i.constructionLoanInterest;
 
     // 建設公司（未節稅）
     const cProfit = Math.max(salesRevenue - baseCost, 0);
@@ -251,8 +260,12 @@ export function useCalculator() {
       salesInfo: {
         actualSalesAmount,
         preSaleRevenue,
-        salesFee,
+        agencyFee,
         agencyFeeTotal,
+      },
+      warnings: {
+        constructorOverflow,
+        message: warningMessage,
       },
     };
   }, [inputs]);
