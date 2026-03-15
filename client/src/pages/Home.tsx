@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useCalculator } from '@/hooks/useCalculator';
 import CurrencyInput from '@/components/CurrencyInput';
 import ResultCard from '@/components/ResultCard';

@@ -50,6 +50,19 @@ export interface KuseJDResults {
   landlordPretax: number; // 地主稅前盈餘
   landlordTwoTax: number; // 地主兩稅合一
   landlordAfterTax: number; // 地主稅後盈餘
+  
+  // 合建利潤分配
+  devProfit1: number; // 建設端利潤（內帳）
+  landProfit1: number; // 地主端利潤（內帳）
+  devProfit2: number; // 建設端利潤（外帳）
+  landProfit2: number; // 地主端利潤（外帳）
+  
+  // 成本合計
+  totalCost1: number; // 內帳成本合計
+  totalCost2: number; // 外帳成本合計
+  profit1: number; // 內帳利潤
+  profit2: number; // 外帳利潤
+  interest2: number; // 建物利息2
 }
 
 const DEFAULT_INPUTS: KuseJDInputs = {
@@ -136,6 +149,20 @@ export function useKuseJointDevelopment() {
     const devAfterTax = devPretax - devTwoTax - devDistTax;
     const landlordAfterTax = landlordPretax - landlordTwoTax;
 
+    // 內帳成本合計
+    const totalCost1 = land1 + landInterest1 + build1 + buildInterest1 + salesFee;
+    const profit1 = totalSales - totalCost1;
+    
+    // 外帳成本合計
+    const totalCost2 = inputs.landCost2 + build2 + inputs.interest2 + salesFee;
+    const profit2 = totalSales - totalCost2;
+    
+    // 合建利潤分配
+    const devProfit1 = profit1 * inputs.devPct;
+    const landProfit1 = profit1 * (1 - inputs.devPct);
+    const devProfit2 = profit2 * inputs.devPct;
+    const landProfit2 = profit2 * (1 - inputs.devPct);
+
     return {
       totalSales,
       land1,
@@ -158,6 +185,15 @@ export function useKuseJointDevelopment() {
       landlordPretax,
       landlordTwoTax,
       landlordAfterTax,
+      devProfit1,
+      landProfit1,
+      devProfit2,
+      landProfit2,
+      totalCost1,
+      totalCost2,
+      profit1,
+      profit2,
+      interest2: inputs.interest2,
     };
   }, [inputs]);
 
