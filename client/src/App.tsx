@@ -4,13 +4,15 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
-import JointDevelopment from "./pages/JointDevelopment";
+import Home from '@/pages/Home';
+import KuseJointDevelopment from '@/pages/KuseJointDevelopment';
+import JointDevelopment from '@/pages/JointDevelopment';
 
 function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/kuse-joint-development"} component={KuseJointDevelopment} />
       <Route path={"/joint-development"} component={JointDevelopment} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
