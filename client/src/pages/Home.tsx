@@ -92,7 +92,7 @@ export default function Home() {
           </TabsList>
 
           {/* 銷售參數 */}
-          <TabsContent value="sales" className="bg-card border border-border rounded-xl p-5 print:border-0 print:bg-transparent print:p-0">
+          <TabsContent value="sales" className="bg-card border border-border rounded-xl p-5 print:border-0 print:bg-transparent print:p-0 print:block">
             <h2 className="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
               銷售參數（動態連結）
@@ -136,7 +136,7 @@ export default function Home() {
           </TabsContent>
 
           {/* 建設支出 */}
-          <TabsContent value="expense" className="bg-card border border-border rounded-xl p-5 print:border-0 print:bg-transparent print:p-0">
+          <TabsContent value="expense" className="bg-card border border-border rounded-xl p-5 print:border-0 print:bg-transparent print:p-0 print:block">
             <h2 className="text-sm font-semibold text-destructive mb-4 flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
               建設總支出（實際成本，含稅）
@@ -154,7 +154,7 @@ export default function Home() {
           </TabsContent>
 
           {/* 建設資金流入 */}
-          <TabsContent value="revenue" className="bg-card border border-border rounded-xl p-5 print:border-0 print:bg-transparent print:p-0">
+          <TabsContent value="revenue" className="bg-card border border-border rounded-xl p-5 print:border-0 print:bg-transparent print:p-0 print:block">
             <h2 className="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
               <TrendingDown className="w-4 h-4" />
               建設資金流入（至客戶貸款撥款前）
@@ -182,7 +182,7 @@ export default function Home() {
           </TabsContent>
 
           {/* 可延後付款 */}
-          <TabsContent value="deferred" className="bg-card border border-border rounded-xl p-5 print:border-0 print:bg-transparent print:p-0">
+          <TabsContent value="deferred" className="bg-card border border-border rounded-xl p-5 print:border-0 print:bg-transparent print:p-0 print:block">
             <h2 className="text-sm font-semibold text-accent mb-4 flex items-center gap-2">
               <ShieldCheck className="w-4 h-4" />
               可延後付款費用（客戶貸款撥款後支付）
@@ -207,7 +207,7 @@ export default function Home() {
           </TabsContent>
 
           {/* 節稅操作 */}
-          <TabsContent value="taxsaving" className="bg-card border border-border rounded-xl p-5 print:border-0 print:bg-transparent print:p-0">
+          <TabsContent value="taxsaving" className="bg-card border border-border rounded-xl p-5 print:border-0 print:bg-transparent print:p-0 print:block">
             <h2 className="text-sm font-semibold text-accent mb-4 flex items-center gap-2">
               <HardHat className="w-4 h-4" />
               節稅操作設定
@@ -245,7 +245,7 @@ export default function Home() {
           </TabsContent>
 
           {/* 稅率參數 */}
-          <TabsContent value="tax" className="bg-card border border-border rounded-xl p-5 print:border-0 print:bg-transparent print:p-0">
+          <TabsContent value="tax" className="bg-card border border-border rounded-xl p-5 print:border-0 print:bg-transparent print:p-0 print:block">
             <h2 className="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               稅率參數
