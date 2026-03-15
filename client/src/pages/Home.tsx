@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useCalculator } from '@/hooks/useCalculator';
 import CurrencyInput from '@/components/CurrencyInput';
 import ResultCard from '@/components/ResultCard';
+import SliderInput from '@/components/SliderInput';
 import Navigation from '@/components/Navigation';
 import { formatCurrency, formatPercent } from '@/lib/format';
 import {
@@ -116,6 +117,18 @@ export default function Home() {
             銷售參數（動態連結）
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 print:grid-cols-5 print:gap-2">
+            <div className="print:hidden">
+              <SliderInput
+                label="銀選完成率"
+                value={inputs.salesCompletionRate}
+                min={0}
+                max={1}
+                step={0.01}
+                onChange={v => updateInput('salesCompletionRate', v)}
+                isPercent={true}
+                decimals={1}
+              />
+            </div>
             <CurrencyInput
               label="銀選完成率"
               value={inputs.salesCompletionRate * 100}
@@ -123,7 +136,20 @@ export default function Home() {
               suffix="%"
               hint="100% 表示全部完銷"
               decimals={1}
+              className="hidden print:block"
             />
+            <div className="print:hidden">
+              <SliderInput
+                label="預收房屋款比例"
+                value={inputs.preSaleRevenueRate}
+                min={0}
+                max={0.5}
+                step={0.01}
+                onChange={v => updateInput('preSaleRevenueRate', v)}
+                isPercent={true}
+                decimals={1}
+              />
+            </div>
             <CurrencyInput
               label="預收房屋款比例"
               value={inputs.preSaleRevenueRate * 100}
@@ -131,7 +157,20 @@ export default function Home() {
               suffix="%"
               hint="例：15 代表 15%"
               decimals={1}
+              className="hidden print:block"
             />
+            <div className="print:hidden">
+              <SliderInput
+                label="代銷費用比例"
+                value={inputs.agencyFeeRate}
+                min={0}
+                max={0.1}
+                step={0.001}
+                onChange={v => updateInput('agencyFeeRate', v)}
+                isPercent={true}
+                decimals={1}
+              />
+            </div>
             <CurrencyInput
               label="代銷費用比例"
               value={inputs.agencyFeeRate * 100}
@@ -139,6 +178,7 @@ export default function Home() {
               suffix="%"
               hint="代銷、廣告等費用"
               decimals={1}
+              className="hidden print:block"
             />
             <div className="bg-secondary/30 border border-border rounded-lg p-4 print:border-0 print:bg-transparent">
               <p className="text-xs text-muted-foreground mb-1">實際銷售金額</p>
