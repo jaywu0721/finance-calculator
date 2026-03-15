@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useJointDevelopmentCalculator } from '@/hooks/useJointDevelopmentCalculator';
 import CurrencyInput from '@/components/CurrencyInput';
+import Navigation from '@/components/Navigation';
 import { formatCurrency, formatPercent } from '@/lib/format';
 import { Printer } from 'lucide-react';
 
@@ -14,6 +15,7 @@ export default function JointDevelopment() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <Navigation />
       <div className="container mx-auto px-4 py-8">
         {/* 標題和列印按鈕 */}
         <div className="flex items-center justify-between mb-8 print:mb-4">

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useCalculator } from '@/hooks/useCalculator';
 import CurrencyInput from '@/components/CurrencyInput';
 import ResultCard from '@/components/ResultCard';
+import Navigation from '@/components/Navigation';
 import { formatCurrency, formatPercent } from '@/lib/format';
 import {
   RotateCcw, Building2, HardHat, TrendingDown, TrendingUp,
@@ -32,8 +33,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navigation />
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50 print:sticky print:top-0">
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-16 z-40 print:sticky print:top-0">
         <div className="container py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
