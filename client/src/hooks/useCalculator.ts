@@ -17,12 +17,14 @@ export interface ProjectInputs {
   // ── 銷售參數（動態連結）──
   totalSalesAmount: number;         // 建案總銷售金額（含稅）
   salesCompletionRate: number;      // 銷售完成率（0-1）
-  preSaleRevenueRate: number;       // 預收房屋款比例（0-1）
+  preSaleRevenueRate: number;       // 預收房屋款比例（0-1）- 可自訂
   agencyFeeRate: number;            // 代銷費用比例（0-1）- 自動成為廣告費
 
   // ── 建設總支出（實際成本）──
   constructionCost: number;
-  constructionLoanInterest: number;
+  constructionLoanRate: number;       // 建融利率（0-1）
+  constructionDurationYears: number;  // 興建時間（年）
+  constructionLoanInterest: number;   // 自動計算：建融額度 × 建融利率 × 1/2 × 興建時間
 
   // ── 建設資金流入（資金缺口用）──
   constructionLoan: number;
@@ -119,7 +121,9 @@ const defaultInputs: ProjectInputs = {
   agencyFeeRate: 0.05,              // 代銷費用 5%
 
   constructionCost: 218991554,
-  constructionLoanInterest: 4702500,
+  constructionLoanRate: 0.045,        // 預設 4.5%
+  constructionDurationYears: 2.5,     // 預設 2.5 年
+  constructionLoanInterest: 4702500,  // 自動計算
 
   constructionLoan: 104500000,
 
@@ -143,10 +147,21 @@ export function useCalculator() {
   const [inputs, setInputs] = useState<ProjectInputs>(defaultInputs);
 
   const updateInput = <K extends keyof ProjectInputs>(key: K, value: ProjectInputs[K]) => {
-    setInputs(prev => ({ ...prev, [key]: value }));
+    setInputs(prev => {
+      const updated = { ...prev, [key]: value };
+      // 自動計算建融利息
+      if (key === 'constructionLoanRate' || key === 'constructionDurationYears' || key === 'constructionLoan') {
+        updated.constructionLoanInterest = updated.constructionLoan * updated.constructionLoanRate * 0.5 * updated.constructionDurationYears;
+      }
+      return updated;
+    });
   };
 
-  const resetInputs = () => setInputs(defaultInputs);
+  const resetInputs = () => {
+    const reset = { ...defaultInputs };
+    reset.constructionLoanInterest = reset.constructionLoan * reset.constructionLoanRate * 0.5 * reset.constructionDurationYears;
+    setInputs(reset);
+  };
 
   const result = useMemo<CalculationResult>(() => {
     const i = inputs;

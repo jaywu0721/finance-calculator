@@ -113,13 +113,21 @@ export default function Home() {
             <TrendingUp className="w-4 h-4" />
             銷售參數（動態連結）
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4 print:gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 print:grid-cols-5 print:gap-2">
             <CurrencyInput
               label="銀選完成率"
               value={inputs.salesCompletionRate * 100}
               onChange={v => updateInput('salesCompletionRate', v / 100)}
               suffix="%"
               hint="100% 表示全部完銷"
+              decimals={1}
+            />
+            <CurrencyInput
+              label="預收房屋款比例"
+              value={inputs.preSaleRevenueRate * 100}
+              onChange={v => updateInput('preSaleRevenueRate', v / 100)}
+              suffix="%"
+              hint="例：15 代表 15%"
               decimals={1}
             />
             <CurrencyInput
@@ -137,15 +145,15 @@ export default function Home() {
           </div>
           <div className="mt-4 pt-4 border-t border-border print:border-t print:mt-2 print:pt-2 space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">預收房屋款</span>
+              <span className="text-muted-foreground">預收房屋款（自動計算）</span>
               <span className="font-mono">{formatCurrency(result.salesInfo.preSaleRevenue)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">代銷費用</span>
+              <span className="text-muted-foreground">代銷費用（自動計算）</span>
               <span className="font-mono">{formatCurrency(result.salesInfo.agencyFee)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">客戶代辦費收入</span>
+              <span className="text-muted-foreground">客戶代辦費收入（自動計算）</span>
               <span className="font-mono">{formatCurrency(result.salesInfo.agencyFeeTotal)}</span>
             </div>
           </div>
@@ -155,17 +163,24 @@ export default function Home() {
         <section className={`bg-card border border-border rounded-b-xl p-5 print:border-0 print:bg-transparent print:p-0 print:rounded-none print:mb-6 ${activeTab !== 'expense' ? 'hidden print:block' : ''}`}>
           <h2 className="text-sm font-semibold text-destructive mb-4 flex items-center gap-2">
             <TrendingUp className="w-4 h-4" />
-            建設總支出（實際成本，含稅）
+            建設總支出（實際成本，含税）
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 print:grid-cols-3 print:gap-2">
-            <CurrencyInput label="施工成本估算（含稅）" value={inputs.constructionCost} onChange={v => updateInput('constructionCost', v)} />
-            <CurrencyInput label="建融利息支出" value={inputs.constructionLoanInterest} onChange={v => updateInput('constructionLoanInterest', v)} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4 print:gap-2">
+            <CurrencyInput label="施工成本估算（含税）" value={inputs.constructionCost} onChange={v => updateInput('constructionCost', v)} />
+            <CurrencyInput label="建融利率" value={inputs.constructionLoanRate * 100} onChange={v => updateInput('constructionLoanRate', v / 100)} suffix="%" decimals={2} hint="例：4.5" />
+            <CurrencyInput label="興建時間" value={inputs.constructionDurationYears} onChange={v => updateInput('constructionDurationYears', v)} suffix="年" decimals={1} hint="例：2.5" />
+            <div className="bg-secondary/30 border border-border rounded-lg p-4 print:border-0 print:bg-transparent">
+              <p className="text-xs text-muted-foreground mb-1">建融利息（自動計算）</p>
+              <p className="font-mono font-bold text-lg text-destructive">{formatCurrency(inputs.constructionLoanInterest)}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">公式：建融 × 利率 × 0.5 × 時間</p>
+            </div>
           </div>
           <div className="mt-4 pt-4 border-t border-border print:border-t print:mt-2 print:pt-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">建設總支出（實際）</span>
               <span className="font-mono font-bold text-lg text-destructive">{formatCurrency(result.actual.totalExpense)} 元</span>
             </div>
+            <p className="text-[10px] text-muted-foreground mt-2">計算：施工成本 + 建融利息</p>
           </div>
         </section>
 
