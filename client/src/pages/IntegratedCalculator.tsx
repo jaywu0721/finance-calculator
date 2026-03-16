@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import KuseJointDevelopment from './KuseJointDevelopment';
 import Home from './Home';
@@ -35,18 +35,16 @@ export default function IntegratedCalculator() {
           </button>
         </div>
 
-        {/* 頁籤內容 */}
-        <div>
-          {activeTab === 'joint-development' && (
-            <div>
-              <KuseJointDevelopment />
-            </div>
-          )}
-          {activeTab === 'tax-calculation' && (
-            <div>
-              <Home />
-            </div>
-          )}
+        {/* 頁籤內容 - 使用 display 切換而非條件渲染，保留已輸入的數值 */}
+        <div
+          style={{ display: activeTab === 'joint-development' ? 'block' : 'none' }}
+        >
+          <KuseJointDevelopment />
+        </div>
+        <div
+          style={{ display: activeTab === 'tax-calculation' ? 'block' : 'none' }}
+        >
+          <Home />
         </div>
       </div>
     </div>
