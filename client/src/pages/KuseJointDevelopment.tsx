@@ -309,18 +309,52 @@ export default function KuseJointDevelopment() {
             {/* 合建分配 */}
             <div className="mt-6 pt-6 border-t border-border">
               <h3 className="font-bold mb-3 print:text-sm">合建分配</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs print:text-xs">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-2 px-2">角色</th>
+                      <th className="text-right py-2 px-2">稅前盈餘</th>
+                      <th className="text-right py-2 px-2">兩稅合一(20%)</th>
+                      <th className="text-right py-2 px-2">個人分配(28%)</th>
+                      <th className="text-right py-2 px-2">稅後盈餘</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-border hover:bg-secondary/20">
+                      <td className="py-2 px-2">建設</td>
+                      <td className="text-right py-2 px-2 font-mono">{formatCurrency(result.devPretax)}</td>
+                      <td className="text-right py-2 px-2 font-mono">{formatCurrency(result.devTwoTax)}</td>
+                      <td className="text-right py-2 px-2 font-mono">{formatCurrency(result.devDistTax)}</td>
+                      <td className="text-right py-2 px-2 font-mono text-emerald-400">{formatCurrency(result.devAfterTax)}</td>
+                    </tr>
+                    <tr className="border-b border-border hover:bg-secondary/20">
+                      <td className="py-2 px-2">地主</td>
+                      <td className="text-right py-2 px-2 font-mono">{formatCurrency(result.landlordPretax)}</td>
+                      <td className="text-right py-2 px-2 font-mono">{formatCurrency(result.landlordTwoTax)}</td>
+                      <td className="text-right py-2 px-2 font-mono">—</td>
+                      <td className="text-right py-2 px-2 font-mono text-emerald-400">{formatCurrency(result.landlordAfterTax)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* 內帳與外帳對比 */}
+            <div className="mt-6 pt-6 border-t border-border">
+              <h3 className="font-bold mb-3 print:text-sm">內帳與外帳對比</h3>
               <div className="space-y-2 text-sm print:text-xs">
                 <div className="flex justify-between">
                   <span>建設端利潤（內帳）</span>
                   <span className="font-mono">{formatCurrency(result.devProfit1)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>地主端利潤（內帳）</span>
-                  <span className="font-mono">{formatCurrency(result.landProfit1)}</span>
-                </div>
-                <div className="flex justify-between border-t border-border pt-2">
                   <span>建設端利潤（外帳）</span>
                   <span className="font-mono">{formatCurrency(result.devProfit2)}</span>
+                </div>
+                <div className="flex justify-between border-t border-border pt-2">
+                  <span>地主端利潤（內帳）</span>
+                  <span className="font-mono">{formatCurrency(result.landProfit1)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>地主端利潤（外帳）</span>
