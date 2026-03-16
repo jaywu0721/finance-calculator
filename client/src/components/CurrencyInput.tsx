@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import { formatCurrency } from '@/lib/format';
 
 interface CurrencyInputProps {
-  label: string;
+  label?: string;
   value: number;
   onChange: (value: number) => void;
   suffix?: string;
@@ -39,7 +39,7 @@ export default function CurrencyInput({ label, value, onChange, suffix = '元', 
 
   return (
     <div className={`group ${className}`}>
-      <label className="block text-xs text-muted-foreground mb-1 tracking-wide">{label}</label>
+      {label && <label className="block text-xs text-muted-foreground mb-1 tracking-wide">{label}</label>}
       {hint && <p className="text-[10px] text-muted-foreground/60 mb-1">{hint}</p>}
       <div className="relative flex items-center">
         <input
