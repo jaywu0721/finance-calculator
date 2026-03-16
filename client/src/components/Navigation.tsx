@@ -4,8 +4,7 @@ import { Calculator, Building2 } from 'lucide-react';
 export default function Navigation() {
   const [location] = useLocation();
 
-  const isKuseJD = location === '/kuse-joint-development';
-  const isHome = location === '/';
+  const isIntegrated = location === '/';
 
   return (
     <div className="bg-card border-b border-border sticky top-0 z-50">
@@ -21,25 +20,9 @@ export default function Navigation() {
 
           {/* Navigation Links */}
           <div className="flex items-center gap-2">
-            <Link href="/kuse-joint-development" className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
-              isKuseJD
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-            }`}>
-              <Building2 className="w-4 h-4" />
-              <span className="hidden sm:inline text-sm font-medium">合建收益評估</span>
-              <span className="sm:hidden text-sm font-medium">合建</span>
-            </Link>
-
-            <Link href="/" className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
-              isHome
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-            }`}>
-              <Calculator className="w-4 h-4" />
-              <span className="hidden sm:inline text-sm font-medium">稅務套利試算</span>
-              <span className="sm:hidden text-sm font-medium">試算</span>
-            </Link>
+            {isIntegrated && (
+              <span className="text-sm text-muted-foreground">使用頁籤切換模組</span>
+            )}
           </div>
         </div>
       </div>

@@ -7,11 +7,13 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from '@/pages/Home';
 import KuseJointDevelopment from '@/pages/KuseJointDevelopment';
 import JointDevelopment from '@/pages/JointDevelopment';
+import IntegratedCalculator from '@/pages/IntegratedCalculator';
 
 function Router() {
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
+      <Route path={"/"} component={IntegratedCalculator} />
+      <Route path={"/home"} component={Home} />
       <Route path={"/kuse-joint-development"} component={KuseJointDevelopment} />
       <Route path={"/joint-development"} component={JointDevelopment} />
       <Route path={"/404"} component={NotFound} />
