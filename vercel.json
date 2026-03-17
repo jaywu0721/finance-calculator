@@ -1,9 +1,5 @@
 {
-  "buildCommand": "cd client && pnpm install && pnpm run build",
-  "outputDirectory": "client/dist",
-  "framework": "vite",
-  "env": {
-    "VITE_APP_TITLE": "營建試算工具",
-    "VITE_APP_LOGO": "建"
-  }
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/public",
+  "framework": "vite"
 }
