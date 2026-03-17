@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react';
 
 /* ===================================================================
- * 營建雙平台資金缺口與稅務套利試算 — 計算引擎 v4
+ * 營建雙平台資金缺口與稅務規劃試算 — 計算引擎 v4
  *
  * 關鍵修正：
  * - 代銷費用 = 建案總銷售金額 × 代銷費用比例（自動成為廣告費）
- * - 營造廠延後付款 = (施工成本估算 + 營造廠節稅金額) × 營造廠延後付款比例
- * - 新增警示：營造廠節稅金額不應超過施工成本估算
+ * - 營造廠延後付款 = (施工成本估算 + 營造廠成本調整金額) × 營造廠延後付款比例
+ * - 新增警示：營造廠成本調整金額不應超過施工成本估算
  * =================================================================== */
 
 export interface ProjectInputs {
@@ -37,7 +37,7 @@ export interface ProjectInputs {
   constructorFixedExpense: number;
   agencyPostDeliveryPct: number;
 
-  // ── 節稅操作設定 ──
+  // ── 成本優化設定 ──
   taxSavingConstructor: number;
   constructorDeferredPct: number;
   taxSavingConstruction: number;
@@ -62,7 +62,7 @@ export interface ScenarioResult {
 }
 
 export interface TaxAnalysis {
-  // 建設公司（未節稅）
+  // 建設公司（基準）
   salesRevenue: number;
   baseCost: number;
   cProfit: number;
@@ -71,14 +71,14 @@ export interface TaxAnalysis {
   cTotalTax: number;
   cEffRate: number;
 
-  // 建設公司（節稅後）
+  // 建設公司（優化後）
   cProfitAfter: number;
   cCorpTaxAfter: number;
   cDividendTaxAfter: number;
   cTotalTaxAfter: number;
   cEffRateAfter: number;
 
-  // 營造廠（節稅部分）
+  // 營造廠（成本調整部分）
   bRevenue: number;
   bTaxableIncome: number;
   bCorpTax: number;
@@ -172,10 +172,10 @@ export function useCalculator() {
     const agencyFee = actualSalesAmount * i.agencyFeeRate;  // 代銷費用 = 總銷金額 × 比例
     const agencyFeeTotal = i.agencyFeePerUnit * i.totalUnits;
 
-    // ═══ 檢查警示：營造廠節稅金額是否超過施工成本 ═══
+    // ═══ 檢查警示：營造廠成本調整金額是否超過施工成本 ═══
     const constructorOverflow = i.taxSavingConstructor > i.constructionCost;
     const warningMessage = constructorOverflow
-      ? `⚠️ 警告：營造廠節稅金額 ${i.taxSavingConstructor.toLocaleString()} 超過施工成本估算 ${i.constructionCost.toLocaleString()}，請檢查設定`
+      ? `⚠️ 警告：營造廠成本調整金額 ${i.taxSavingConstructor.toLocaleString()} 超過施工成本估算 ${i.constructionCost.toLocaleString()}，請檢查設定`
       : '';
 
     // ═══ 情境一：實際成本（資金缺口）═══
@@ -195,12 +195,12 @@ export function useCalculator() {
     const actualDeferred = actualDeferredItems.reduce((s, d) => s + d.amount, 0);
     const actualGap = actualExpense - actualRevenue - actualDeferred;
 
-    // ═══ 情境二：節稅操作（資金缺口）═══
+    // ═══ 情境二：成本優化（資金缺口）═══
     const totalTaxSaving = i.taxSavingConstructor + i.taxSavingConstruction;
     const taxSavingExpense = actualExpense + totalTaxSaving;
     const taxSavingRevenue = actualRevenue;
 
-    // 修正：營造廠延後付款 = (施工成本 + 營造廠節稅金額) × 延後比例
+    // 修正：營造廠延後付款 = (施工成本 + 營造廠成本調整金額) × 延後比例
     const constructorDeferredBase = i.constructionCost + i.taxSavingConstructor;
     const constructorExtraDeferred = constructorDeferredBase * i.constructorDeferredPct;
 
@@ -211,8 +211,8 @@ export function useCalculator() {
       { label: '建物登記/代書/記帳費', amount: i.registrationFees },
       { label: '營造廠固定支出', amount: i.constructorFixedExpense },
       { label: '代銷交屋後支付', amount: agencyDeferred },
-      { label: '營造廠延後付款（含節稅）', amount: constructorExtraDeferred },
-      { label: '建設端節稅延後（廚具衛浴）', amount: i.taxSavingConstruction },
+      { label: '營造廠延後付款（含成本調整）', amount: constructorExtraDeferred },
+      { label: '建設端成本調整延後（廚具衛浴）', amount: i.taxSavingConstruction },
     ];
     const taxSavingDeferred = taxSavingDeferredItems.reduce((s, d) => s + d.amount, 0);
     const taxSavingGap = taxSavingExpense - taxSavingRevenue - taxSavingDeferred;
@@ -221,21 +221,21 @@ export function useCalculator() {
     const salesRevenue = actualSalesAmount;
     const baseCost = i.constructionCost + agencyFee + i.constructionLoanInterest;
 
-    // 建設公司（未節稅）
+    // 建設公司（基準）
     const cProfit = Math.max(salesRevenue - baseCost, 0);
     const cCorpTax = cProfit * i.corpTaxRate;
     const cDividendTax = (cProfit - cCorpTax) * i.dividendTaxRate;
     const cTotalTax = cCorpTax + cDividendTax;
     const cEffRate = cProfit > 0 ? (cTotalTax / cProfit) * 100 : 0;
 
-    // 建設公司（節稅後）
+    // 建設公司（優化後）
     const cProfitAfter = Math.max(salesRevenue - baseCost - totalTaxSaving, 0);
     const cCorpTaxAfter = cProfitAfter * i.corpTaxRate;
     const cDividendTaxAfter = (cProfitAfter - cCorpTaxAfter) * i.dividendTaxRate;
     const cTotalTaxAfter = cCorpTaxAfter + cDividendTaxAfter;
     const cEffRateAfter = cProfitAfter > 0 ? (cTotalTaxAfter / cProfitAfter) * 100 : 0;
 
-    // 營造廠（節稅部分）
+    // 營造廠（成本調整部分）
     const bRevenue = totalTaxSaving;
     const bTaxableIncome = bRevenue * i.constructorIncomeStd;
     const bCorpTax = bTaxableIncome * i.corpTaxRate;

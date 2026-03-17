@@ -31,7 +31,7 @@ export default function IntegratedCalculator() {
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            營建雙平台資金缺口與稅務套利試算
+            營建雙平台資金缺口與稅務規劃試算
           </button>
         </div>
 
