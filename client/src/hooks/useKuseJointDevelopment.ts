@@ -98,7 +98,7 @@ export function useKuseJointDevelopment() {
 
     // 3) 利息1（分別計算）
     const landInterest1 = land1 * inputs.landRate * inputs.landYears;
-    const buildInterest1 = build1 * inputs.buildRate * inputs.buildYears;
+    const buildInterest1 = build1 * inputs.buildRate * 0.5 * inputs.buildYears;
 
     // 4) 銷售費用
     const salesFee = totalSales * inputs.salesFeeRate;

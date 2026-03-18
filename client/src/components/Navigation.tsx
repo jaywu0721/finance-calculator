@@ -18,12 +18,6 @@ export default function Navigation() {
             <span className="font-semibold text-foreground hidden sm:inline">營建試算工具</span>
           </div>
 
-          {/* Navigation Links */}
-          <div className="flex items-center gap-2">
-            {isIntegrated && (
-              <span className="text-sm text-muted-foreground">使用頁籤切換模組</span>
-            )}
-          </div>
         </div>
       </div>
     </div>

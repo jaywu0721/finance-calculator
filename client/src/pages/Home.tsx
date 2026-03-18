@@ -1,22 +1,21 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useCalculator } from '@/hooks/useCalculator';
 import CurrencyInput from '@/components/CurrencyInput';
 import ResultCard from '@/components/ResultCard';
 import SliderInput from '@/components/SliderInput';
 import Navigation from '@/components/Navigation';
-import { formatCurrency, formatPercent } from '@/lib/format';
+import { formatCurrency } from '@/lib/format';
 import {
   RotateCcw, Building2, HardHat, TrendingDown, TrendingUp,
   AlertTriangle, ShieldCheck, Calculator, ChevronDown, ChevronUp,
-  DollarSign, BarChart3, Download, Printer,
+  Printer,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 /*
  * 設計風格：Bloomberg Terminal 金融儀表板
  * - 深色背景 + 高對比數字
- * - 翡翠綠 = 正面/節省
+ * - 翡翠綠 = 正面
  * - 珊瑚紅 = 負面/缺口
  * - 金色 = 關鍵指標
  * - DM Sans + JetBrains Mono
@@ -25,7 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export default function Home() {
   const { inputs, updateInput, resetInputs, result } = useCalculator();
   const [showActualDeferred, setShowActualDeferred] = useState(false);
-  const [showTaxSavingDeferred, setShowTaxSavingDeferred] = useState(false);
+  const [showOptimizedDeferred, setShowOptimizedDeferred] = useState(false);
   const [activeTab, setActiveTab] = useState('sales');
 
   const handlePrint = () => {
@@ -33,10 +32,10 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background print:min-h-0">
       <Navigation />
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-16 z-40 print:sticky print:top-0">
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-16 z-40 print:static print:top-0">
         <div className="container py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
@@ -60,9 +59,9 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="container py-6 space-y-6 print:py-0 print:space-y-4">
+      <main className="container py-6 space-y-6 print:py-1 print:space-y-2">
         {/* 建案基本資料 */}
-        <section className="bg-card border border-border rounded-xl p-5 print:border-0 print:bg-transparent print:p-0 print:mb-6">
+        <section className="bg-card border border-border rounded-xl p-5 print:border print:border-gray-300 print:p-2 print:mb-2">
           <h2 className="text-sm font-semibold text-accent mb-4 flex items-center gap-2">
             <Building2 className="w-4 h-4" />
             建案基本資料
@@ -93,7 +92,6 @@ export default function Home() {
               { value: 'revenue', label: '資金流入' },
               { value: 'deferred', label: '可延後付款' },
               { value: 'taxsaving', label: '成本優化' },
-              { value: 'tax', label: '稅率參數' },
             ].map(tab => (
               <button
                 key={tab.value}
@@ -111,7 +109,7 @@ export default function Home() {
         </div>
 
         {/* 銷售參數 */}
-        <section className={`bg-card border border-border rounded-b-xl p-5 print:border-0 print:bg-transparent print:p-0 print:rounded-none print:mb-6 ${activeTab !== 'sales' ? 'hidden print:block' : ''}`}>
+        <section className={`bg-card border border-border rounded-b-xl p-5 print:border print:border-gray-300 print:p-2 print:rounded-none print:mb-1 ${activeTab !== 'sales' ? 'hidden print:block' : ''}`}>
           <h2 className="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
             <TrendingUp className="w-4 h-4" />
             銷售參數（動態連結）
@@ -191,8 +189,8 @@ export default function Home() {
               <span className="font-mono">{formatCurrency(result.salesInfo.preSaleRevenue)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">代銷費用（自動計算）</span>
-              <span className="font-mono">{formatCurrency(result.salesInfo.agencyFee)}</span>
+              <span className="text-muted-foreground">撥款前代銷費用（自動計算）</span>
+              <span className="font-mono">{formatCurrency(result.salesInfo.agencyFeePreDelivery)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">客戶代辦費收入（自動計算）</span>
@@ -202,19 +200,27 @@ export default function Home() {
         </section>
 
         {/* 建設支出 */}
-        <section className={`bg-card border border-border rounded-b-xl p-5 print:border-0 print:bg-transparent print:p-0 print:rounded-none print:mb-6 ${activeTab !== 'expense' ? 'hidden print:block' : ''}`}>
+        <section className={`bg-card border border-border rounded-b-xl p-5 print:border print:border-gray-300 print:p-2 print:rounded-none print:mb-1 ${activeTab !== 'expense' ? 'hidden print:block' : ''}`}>
           <h2 className="text-sm font-semibold text-destructive mb-4 flex items-center gap-2">
             <TrendingUp className="w-4 h-4" />
             建設總支出（實際成本，含税）
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4 print:gap-2">
             <CurrencyInput label="施工成本估算（含税）" value={inputs.constructionCost} onChange={v => updateInput('constructionCost', v)} />
+            <CurrencyInput label="建融撥款" value={inputs.constructionLoan} onChange={v => updateInput('constructionLoan', v)} hint="同步至資金流入" />
             <CurrencyInput label="建融利率" value={inputs.constructionLoanRate * 100} onChange={v => updateInput('constructionLoanRate', v / 100)} suffix="%" decimals={2} hint="例：4.5" />
             <CurrencyInput label="興建時間" value={inputs.constructionDurationYears} onChange={v => updateInput('constructionDurationYears', v)} suffix="年" decimals={1} hint="例：2.5" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 print:grid-cols-2 print:gap-2">
             <div className="bg-secondary/30 border border-border rounded-lg p-4 print:border-0 print:bg-transparent">
               <p className="text-xs text-muted-foreground mb-1">建融利息（自動計算）</p>
               <p className="font-mono font-bold text-lg text-destructive">{formatCurrency(inputs.constructionLoanInterest)}</p>
-              <p className="text-[10px] text-muted-foreground mt-1">公式：建融 × 利率 × 0.5 × 時間</p>
+              <p className="text-[10px] text-muted-foreground mt-1">公式：建融撥款 × 利率 × 0.5 × 時間</p>
+            </div>
+            <div className="bg-secondary/30 border border-border rounded-lg p-4 print:border-0 print:bg-transparent">
+              <p className="text-xs text-muted-foreground mb-1">撥款前代銷費用（自動計算）</p>
+              <p className="font-mono font-bold text-lg text-destructive">{formatCurrency(result.salesInfo.agencyFeePreDelivery)}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">公式：總銷 × 代銷比例 × 完成率 × (1-交屋後比例)</p>
             </div>
           </div>
           <div className="mt-4 pt-4 border-t border-border print:border-t print:mt-2 print:pt-2">
@@ -222,12 +228,12 @@ export default function Home() {
               <span className="text-sm text-muted-foreground">建設總支出（實際）</span>
               <span className="font-mono font-bold text-lg text-destructive">{formatCurrency(result.actual.totalExpense)} 元</span>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-2">計算：施工成本 + 建融利息</p>
+            <p className="text-[10px] text-muted-foreground mt-2">計算：施工成本 + 建融利息 + 撥款前代銷費用</p>
           </div>
         </section>
 
         {/* 建設資金流入 */}
-        <section className={`bg-card border border-border rounded-b-xl p-5 print:border-0 print:bg-transparent print:p-0 print:rounded-none print:mb-6 ${activeTab !== 'revenue' ? 'hidden print:block' : ''}`}>
+        <section className={`bg-card border border-border rounded-b-xl p-5 print:border print:border-gray-300 print:p-2 print:rounded-none print:mb-1 ${activeTab !== 'revenue' ? 'hidden print:block' : ''}`}>
           <h2 className="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
             <TrendingDown className="w-4 h-4" />
             建設資金流入（至客戶貸款撥款前）
@@ -236,7 +242,11 @@ export default function Home() {
             此處為施工期間的資金流入，用於計算資金缺口。建融為借款非收入，但在施工期間可用。
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 print:grid-cols-3 print:gap-2">
-            <CurrencyInput label="建融撥款" value={inputs.constructionLoan} onChange={v => updateInput('constructionLoan', v)} />
+            <div className="bg-secondary/30 border border-border rounded-lg p-4 print:border-0 print:bg-transparent">
+              <p className="text-xs text-muted-foreground mb-1">建融撥款（與建設支出同步）</p>
+              <p className="font-mono font-bold text-lg text-primary">{formatCurrency(inputs.constructionLoan)}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">此值與建設支出的建融撥款連動</p>
+            </div>
             <div className="bg-secondary/30 border border-border rounded-lg p-4 print:border-0 print:bg-transparent">
               <p className="text-xs text-muted-foreground mb-1">預收房屋款（自動計算）</p>
               <p className="font-mono font-bold text-lg text-primary">{formatCurrency(result.salesInfo.preSaleRevenue)}</p>
@@ -255,7 +265,7 @@ export default function Home() {
         </section>
 
         {/* 可延後付款 */}
-        <section className={`bg-card border border-border rounded-b-xl p-5 print:border-0 print:bg-transparent print:p-0 print:rounded-none print:mb-6 ${activeTab !== 'deferred' ? 'hidden print:block' : ''}`}>
+        <section className={`bg-card border border-border rounded-b-xl p-5 print:border print:border-gray-300 print:p-2 print:rounded-none print:mb-1 ${activeTab !== 'deferred' ? 'hidden print:block' : ''}`}>
           <h2 className="text-sm font-semibold text-accent mb-4 flex items-center gap-2">
             <ShieldCheck className="w-4 h-4" />
             可延後付款費用（客戶貸款撥款後支付）
@@ -280,31 +290,28 @@ export default function Home() {
         </section>
 
         {/* 成本優化 */}
-        <section className={`bg-card border border-border rounded-b-xl p-5 print:border-0 print:bg-transparent print:p-0 print:rounded-none print:mb-6 ${activeTab !== 'taxsaving' ? 'hidden print:block' : ''}`}>
+        <section className={`bg-card border border-border rounded-b-xl p-5 print:border print:border-gray-300 print:p-2 print:rounded-none print:mb-1 ${activeTab !== 'taxsaving' ? 'hidden print:block' : ''}`}>
           <h2 className="text-sm font-semibold text-accent mb-4 flex items-center gap-2">
             <HardHat className="w-4 h-4" />
             成本優化設定
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 print:grid-cols-3 print:gap-2">
-            <CurrencyInput label="營造廠成本調整金額" value={inputs.taxSavingConstructor} onChange={v => updateInput('taxSavingConstructor', v)} hint="透過營造廠發包調整的金額" />
-            <CurrencyInput
-              label="營造廠延後付款比例"
-              value={inputs.constructorDeferredPct * 100}
-              onChange={v => updateInput('constructorDeferredPct', v / 100)}
-              suffix="%"
-              hint="營造廠合約 15-20%"
-              decimals={1}
-            />
-            <CurrencyInput label="建設端成本調整金額" value={inputs.taxSavingConstruction} onChange={v => updateInput('taxSavingConstruction', v)} hint="廚具、衛浴等建設端自行發包項目" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 print:grid-cols-3 print:gap-2">
+            <CurrencyInput label="增加成本" value={inputs.extraCost} onChange={v => updateInput('extraCost', v)} hint="營造廠發包調整 + 建設端自行發包（廚具、衛浴等）" />
+            <CurrencyInput label="營造廠延後付款金額" value={inputs.constructorDeferredAmount} onChange={v => updateInput('constructorDeferredAmount', v)} hint="營造廠合約延後支付的金額" />
+            <CurrencyInput label="建設交屋後款項(衛浴等)" value={inputs.postDeliveryBathroom} onChange={v => updateInput('postDeliveryBathroom', v)} hint="僅在情境二可延後付款" />
           </div>
           <div className="mt-4 pt-4 border-t border-border print:border-t print:mt-2 print:pt-2 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">成本優化總額</span>
-              <span className="font-mono font-bold text-lg text-accent">{formatCurrency(inputs.taxSavingConstructor + inputs.taxSavingConstruction)} 元</span>
+              <span className="text-sm text-muted-foreground">增加成本</span>
+              <span className="font-mono font-bold text-lg text-accent">{formatCurrency(inputs.extraCost)} 元</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">營造廠延後付款金額</span>
-              <span className="font-mono font-bold text-accent">{formatCurrency((inputs.constructionCost + inputs.taxSavingConstructor) * inputs.constructorDeferredPct)} 元</span>
+              <span className="font-mono font-bold text-accent">{formatCurrency(inputs.constructorDeferredAmount)} 元</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">建設交屋後款項(衛浴等) <span className="text-[10px] text-primary">(僅情境二)</span></span>
+              <span className="font-mono font-bold text-accent">{formatCurrency(inputs.postDeliveryBathroom)} 元</span>
             </div>
           </div>
           {result.warnings.constructorOverflow && (
@@ -317,46 +324,15 @@ export default function Home() {
           )}
         </section>
 
-        {/* 稅率參數 */}
-        <section className={`bg-card border border-border rounded-b-xl p-5 print:border-0 print:bg-transparent print:p-0 print:rounded-none print:mb-6 ${activeTab !== 'tax' ? 'hidden print:block' : ''}`}>
-          <h2 className="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" />
-            稅率參數
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 print:grid-cols-3 print:gap-2">
-            <CurrencyInput
-              label="營造廠所得額標準"
-              value={inputs.constructorIncomeStd * 100}
-              onChange={v => updateInput('constructorIncomeStd', v / 100)}
-              suffix="%"
-              hint="例：8 代表 8%"
-            />
-            <CurrencyInput
-              label="營所稅率"
-              value={inputs.corpTaxRate * 100}
-              onChange={v => updateInput('corpTaxRate', v / 100)}
-              suffix="%"
-              hint="例：20 代表 20%"
-            />
-            <CurrencyInput
-              label="個人股利所得稅率"
-              value={inputs.dividendTaxRate * 100}
-              onChange={v => updateInput('dividendTaxRate', v / 100)}
-              suffix="%"
-              hint="例：28 代表 28%"
-            />
-          </div>
-        </section>
-
         {/* ═══ 結果面板：兩情境比較 ═══ */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 print:grid-cols-2 print:gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 print:grid-cols-2 print:gap-2">
           {/* 情境一 */}
-          <section className="bg-card border border-border rounded-xl p-5 space-y-4 print:border print:border-gray-400 print:p-4 print:space-y-2">
-            <div className="flex items-center gap-2 pb-3 border-b border-border print:border-b print:pb-2">
-              <div className="w-3 h-3 rounded-full bg-muted-foreground" />
+          <section className="bg-card border border-border rounded-xl p-5 space-y-4 print:border print:border-gray-300 print:p-2 print:space-y-1">
+            <div className="flex items-center gap-2 pb-3 border-b border-border print:border-b print:pb-1">
+              <div className="w-3 h-3 rounded-full bg-muted-foreground print:w-2 print:h-2" />
               <h3 className="text-sm font-semibold">情境一：實際成本（基準）</h3>
             </div>
-            <div className="grid grid-cols-2 gap-3 print:gap-2">
+            <div className="grid grid-cols-2 gap-3 print:gap-1">
               <ResultCard label="建設總支出" value={result.actual.totalExpense} variant="negative" />
               <ResultCard label="建設資金流入" value={result.actual.totalRevenue} variant="positive" />
               <ResultCard label="可延後付款" value={result.actual.deferredPayment} variant="default" />
@@ -371,203 +347,111 @@ export default function Home() {
               延後付款明細
             </button>
 
+            {/* 螢幕顯示：按鈕展開 */}
             {showActualDeferred && (
-              <div className="bg-secondary/30 rounded-lg p-3 text-xs space-y-1 print:block print:bg-transparent print:p-0">
+              <div className="bg-secondary/30 rounded-lg p-3 text-xs space-y-1 print:hidden">
                 <p className="text-muted-foreground">資金缺口 = 總支出 − 資金流入 − 可延後付款</p>
                 <p className="font-mono text-foreground">
                   = {formatCurrency(result.actual.totalExpense)} − {formatCurrency(result.actual.totalRevenue)} − {formatCurrency(result.actual.deferredPayment)}
                 </p>
                 <p className="font-mono font-bold text-destructive">= {formatCurrency(result.actual.fundingGap)} 元</p>
+                <div className="mt-2 pt-2 border-t border-border space-y-1">
+                  {result.actual.deferredBreakdown.map((item, idx) => (
+                    <div key={idx} className="flex justify-between">
+                      <span className="text-muted-foreground">{item.label}</span>
+                      <span className="font-mono">{formatCurrency(item.amount)}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
+            {/* 列印時強制顯示延後付款明細 */}
+            <div className="hidden print:block text-xs space-y-0">
+              <p className="text-muted-foreground">資金缺口 = 總支出 − 資金流入 − 可延後付款</p>
+              <p className="font-mono text-foreground">
+                = {formatCurrency(result.actual.totalExpense)} − {formatCurrency(result.actual.totalRevenue)} − {formatCurrency(result.actual.deferredPayment)}
+              </p>
+              <p className="font-mono font-bold text-destructive">= {formatCurrency(result.actual.fundingGap)} 元</p>
+              <div className="mt-1 pt-1 border-t border-border space-y-0">
+                {result.actual.deferredBreakdown.map((item, idx) => (
+                  <div key={idx} className="flex justify-between">
+                    <span className="text-muted-foreground">{item.label}</span>
+                    <span className="font-mono">{formatCurrency(item.amount)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </section>
 
           {/* 情境二 */}
-          <section className="bg-card border border-border rounded-xl p-5 space-y-4 print:border print:border-gray-400 print:p-4 print:space-y-2">
-            <div className="flex items-center gap-2 pb-3 border-b border-border print:border-b print:pb-2">
-              <div className="w-3 h-3 rounded-full bg-accent" />
+          <section className="bg-card border border-border rounded-xl p-5 space-y-4 print:border print:border-gray-300 print:p-2 print:space-y-1">
+            <div className="flex items-center gap-2 pb-3 border-b border-border print:border-b print:pb-1">
+              <div className="w-3 h-3 rounded-full bg-accent print:w-2 print:h-2" />
               <h3 className="text-sm font-semibold">情境二：成本優化</h3>
             </div>
-            <div className="grid grid-cols-2 gap-3 print:gap-2">
-              <ResultCard label="建設總支出（含成本優化）" value={result.taxSaving.totalExpense} variant="negative" />
-              <ResultCard label="建設資金流入" value={result.taxSaving.totalRevenue} variant="positive" />
-              <ResultCard label="可延後付款（含營造延後）" value={result.taxSaving.deferredPayment} variant="default" />
-              <ResultCard label="優化後資金缺口" value={result.taxSaving.fundingGap} variant={result.taxSaving.fundingGap > 0 ? 'negative' : 'positive'} size="lg" />
+            <div className="grid grid-cols-2 gap-3 print:gap-1">
+              <ResultCard label="建設總支出（含增加成本）" value={result.costOptimized.totalExpense} variant="negative" />
+              <ResultCard label="建設資金流入" value={result.costOptimized.totalRevenue} variant="positive" />
+              <ResultCard label="可延後付款（含營造延後）" value={result.costOptimized.deferredPayment} variant="default" />
+              <ResultCard label="優化後資金缺口" value={result.costOptimized.fundingGap} variant={result.costOptimized.fundingGap > 0 ? 'negative' : 'positive'} size="lg" />
             </div>
 
             <button
-              onClick={() => setShowTaxSavingDeferred(!showTaxSavingDeferred)}
+              onClick={() => setShowOptimizedDeferred(!showOptimizedDeferred)}
               className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors print:hidden"
             >
-              {showTaxSavingDeferred ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              {showOptimizedDeferred ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
               延後付款明細
             </button>
 
-            {showTaxSavingDeferred && (
-              <div className="bg-secondary/30 rounded-lg p-3 text-xs space-y-1 print:block print:bg-transparent print:p-0">
+            {/* 螢幕顯示：按鈕展開 */}
+            {showOptimizedDeferred && (
+              <div className="bg-secondary/30 rounded-lg p-3 text-xs space-y-1 print:hidden">
                 <p className="text-muted-foreground">資金缺口 = 總支出 − 資金流入 − 可延後付款</p>
                 <p className="font-mono text-foreground">
-                  = {formatCurrency(result.taxSaving.totalExpense)} − {formatCurrency(result.taxSaving.totalRevenue)} − {formatCurrency(result.taxSaving.deferredPayment)}
+                  = {formatCurrency(result.costOptimized.totalExpense)} − {formatCurrency(result.costOptimized.totalRevenue)} − {formatCurrency(result.costOptimized.deferredPayment)}
                 </p>
-                <p className="font-mono font-bold text-destructive">= {formatCurrency(result.taxSaving.fundingGap)} 元</p>
+                <p className="font-mono font-bold text-destructive">= {formatCurrency(result.costOptimized.fundingGap)} 元</p>
+                <div className="mt-2 pt-2 border-t border-border space-y-1">
+                  {result.costOptimized.deferredBreakdown.map((item, idx) => (
+                    <div key={idx} className="flex justify-between">
+                      <span className="text-muted-foreground">{item.label}</span>
+                      <span className="font-mono">{formatCurrency(item.amount)}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
+            {/* 列印時強制顯示延後付款明細 */}
+            <div className="hidden print:block text-xs space-y-0">
+              <p className="text-muted-foreground">資金缺口 = 總支出 − 資金流入 − 可延後付款</p>
+              <p className="font-mono text-foreground">
+                = {formatCurrency(result.costOptimized.totalExpense)} − {formatCurrency(result.costOptimized.totalRevenue)} − {formatCurrency(result.costOptimized.deferredPayment)}
+              </p>
+              <p className="font-mono font-bold text-destructive">= {formatCurrency(result.costOptimized.fundingGap)} 元</p>
+              <div className="mt-1 pt-1 border-t border-border space-y-0">
+                {result.costOptimized.deferredBreakdown.map((item, idx) => (
+                  <div key={idx} className="flex justify-between">
+                    <span className="text-muted-foreground">{item.label}</span>
+                    <span className="font-mono">{formatCurrency(item.amount)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </section>
         </div>
 
-        {/* 稅務效益分析 */}
-        <section className="bg-card border border-border rounded-xl p-5 space-y-6 print:border print:border-gray-400 print:p-4 print:space-y-4">
-          <h2 className="text-sm font-semibold text-primary mb-4 flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" />
-            稅務效益分析
-          </h2>
-
-          <div className="text-xs text-muted-foreground mb-4 print:mb-2">
-            銷售金額：{formatCurrency(inputs.totalSalesAmount)} 元
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 print:grid-cols-3 print:gap-4">
-            {/* 建設公司（基準） */}
-            <div className="space-y-2">
-              <h3 className="text-xs font-semibold text-foreground mb-3">建設公司（基準）</h3>
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">銷售收入</span>
-                  <span className="font-mono">{formatCurrency(result.tax.salesRevenue)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">總成本</span>
-                  <span className="font-mono text-destructive">-{formatCurrency(result.tax.baseCost)}</span>
-                </div>
-                <div className="flex justify-between border-t border-border pt-1 mt-1">
-                  <span className="font-semibold">淨利</span>
-                  <span className="font-mono font-bold">{formatCurrency(result.tax.cProfit)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">營所稅 ({formatPercent(inputs.corpTaxRate)})</span>
-                  <span className="font-mono text-destructive">-{formatCurrency(result.tax.cCorpTax)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">股利所得稅 ({formatPercent(inputs.dividendTaxRate)})</span>
-                  <span className="font-mono text-destructive">-{formatCurrency(result.tax.cDividendTax)}</span>
-                </div>
-                <div className="flex justify-between border-t border-border pt-1 mt-1">
-                  <span className="font-semibold">總稅金</span>
-                  <span className="font-mono font-bold text-destructive">-{formatCurrency(result.tax.cTotalTax)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">實質稅率</span>
-                  <span className="font-mono font-bold">{formatPercent(result.tax.cEffRate)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 建設公司（優化後） */}
-            <div className="space-y-2">
-              <h3 className="text-xs font-semibold text-foreground mb-3">建設公司（優化後）</h3>
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">銷售收入</span>
-                  <span className="font-mono">{formatCurrency(result.tax.salesRevenue)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">總成本（含成本優化）</span>
-                  <span className="font-mono text-destructive">-{formatCurrency(result.tax.baseCost + inputs.taxSavingConstructor + inputs.taxSavingConstruction)}</span>
-                </div>
-                <div className="flex justify-between border-t border-border pt-1 mt-1">
-                  <span className="font-semibold">淨利（降低後）</span>
-                  <span className="font-mono font-bold">{formatCurrency(result.tax.cProfitAfter)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">營所稅 ({formatPercent(inputs.corpTaxRate)})</span>
-                  <span className="font-mono text-destructive">-{formatCurrency(result.tax.cCorpTaxAfter)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">股利所得稅 ({formatPercent(inputs.dividendTaxRate)})</span>
-                  <span className="font-mono text-destructive">-{formatCurrency(result.tax.cDividendTaxAfter)}</span>
-                </div>
-                <div className="flex justify-between border-t border-border pt-1 mt-1">
-                  <span className="font-semibold">總稅金</span>
-                  <span className="font-mono font-bold text-destructive">-{formatCurrency(result.tax.cTotalTaxAfter)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">實質稅率</span>
-                  <span className="font-mono font-bold">{formatPercent(result.tax.cEffRateAfter)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 營造廠（成本調整部分） */}
-            <div className="space-y-2">
-              <h3 className="text-xs font-semibold text-foreground mb-3">營造廠（成本調整部分）</h3>
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">調整營業額</span>
-                  <span className="font-mono">{formatCurrency(result.tax.bRevenue)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">課稅所得 (×{formatPercent(inputs.constructorIncomeStd)})</span>
-                  <span className="font-mono">{formatCurrency(result.tax.bTaxableIncome)}</span>
-                </div>
-                <div className="flex justify-between border-t border-border pt-1 mt-1">
-                  <span className="text-muted-foreground">營所稅</span>
-                  <span className="font-mono text-destructive">-{formatCurrency(result.tax.bCorpTax)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">股利所得稅</span>
-                  <span className="font-mono text-destructive">-{formatCurrency(result.tax.bDividendTax)}</span>
-                </div>
-                <div className="flex justify-between border-t border-border pt-1 mt-1">
-                  <span className="font-semibold">總稅金</span>
-                  <span className="font-mono font-bold text-destructive">-{formatCurrency(result.tax.bTotalTax)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">實質稅率（以營業額計）</span>
-                  <span className="font-mono font-bold">{formatPercent(result.tax.bEffRate)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 淨效益總結 */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-4 print:gap-2 pt-4 border-t border-border print:border-t print:pt-2">
-            <div className="bg-secondary/30 rounded-lg p-3 print:bg-transparent print:p-2">
-              <p className="text-xs text-muted-foreground mb-1">基準總稅金</p>
-              <p className="font-mono font-bold text-lg text-destructive print:text-base">{formatCurrency(result.tax.totalBefore)}</p>
-            </div>
-            <div className="bg-secondary/30 rounded-lg p-3 print:bg-transparent print:p-2">
-              <p className="text-xs text-muted-foreground mb-1">優化後總稅金</p>
-              <p className="font-mono font-bold text-lg text-destructive print:text-base">{formatCurrency(result.tax.totalAfter)}</p>
-            </div>
-            <div className="bg-secondary/30 rounded-lg p-3 print:bg-transparent print:p-2">
-              <p className="text-xs text-muted-foreground mb-1">稅務優化效益</p>
-              <p className="font-mono font-bold text-lg text-primary print:text-base">{formatCurrency(result.tax.taxSaved)}</p>
-            </div>
-            <div className="bg-secondary/30 rounded-lg p-3 print:bg-transparent print:p-2">
-              <p className="text-xs text-muted-foreground mb-1">資金缺口增加</p>
-              <p className="font-mono font-bold text-lg text-destructive print:text-base">{formatCurrency(result.tax.gapIncrease)}</p>
-            </div>
-          </div>
-
-          {/* 淨效益總結 */}
-          <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 print:bg-yellow-100 print:border-yellow-300 mt-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold">淨效益</span>
-              <span className="font-mono font-bold text-xl text-primary print:text-lg">
-                {formatCurrency(result.tax.netBenefit)}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground print:text-[10px]">
-              = 稅務優化效益 {formatCurrency(result.tax.taxSaved)} − 資金缺口增加 {formatCurrency(result.tax.gapIncrease)}
-            </p>
-          </div>
-        </section>
-
         {/* 試算結論 */}
-        <section className="bg-card border border-border rounded-xl p-5 print:border print:border-gray-400 print:p-4">
+        <section className="bg-card border border-border rounded-xl p-5 print:border print:border-gray-300 print:p-2">
           <h2 className="text-sm font-semibold text-accent mb-4">試算結論</h2>
-          <p className="text-sm text-foreground leading-relaxed print:text-xs print:leading-relaxed">
-            透過成本優化調整多出 {formatCurrency(inputs.taxSavingConstructor + inputs.taxSavingConstruction)} 元， 建設公司淨利從 {formatCurrency(result.tax.cProfit)} 降至 {formatCurrency(result.tax.cProfitAfter)} 元。 稅務優化效益約 {formatCurrency(result.tax.taxSaved)} 元， 但資金缺口增加 {formatCurrency(result.tax.gapIncrease)} 元。 淨效益為 {formatCurrency(result.tax.netBenefit)} 元。 {result.tax.netBenefit > 0 ? '優化效益大於資金壓力增加，在資金調度可行的前提下，此策略具備財務效益。' : '資金壓力增加幅度較大，需實慎評估資金調度能力。'}
+          <p className="text-sm text-foreground leading-relaxed print:text-xs print:leading-tight">
+            透過成本優化增加 {formatCurrency(inputs.extraCost)} 元，
+            情境一資金缺口為 {formatCurrency(result.actual.fundingGap)} 元，
+            情境二（含增加成本）資金缺口為 {formatCurrency(result.costOptimized.fundingGap)} 元，
+            資金缺口增加 {formatCurrency(result.costOptimized.fundingGap - result.actual.fundingGap)} 元。
+            {result.costOptimized.fundingGap <= result.actual.fundingGap
+              ? '成本優化後資金缺口未增加，策略可行。'
+              : '需審慎評估資金調度能力，確保施工期間資金充足。'}
           </p>
         </section>
       </main>

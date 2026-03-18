@@ -130,3 +130,360 @@
     }
   }
 }
+
+/* ═══════════════════════════════════════════════════════
+   A4 直向列印樣式 — 白底黑字、版面全滿、不跑版
+   ═══════════════════════════════════════════════════════ */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 6mm 8mm;
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* 全域重設 */
+  *,
+  *::before,
+  *::after {
+    color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-shadow: none !important;
+    break-inside: auto;
+  }
+
+  /* 分頁控制 — 防止表格被切斷 */
+  .print\:break-inside-avoid,
+  table,
+  thead,
+  tbody,
+  tr,
+  h3,
+  .break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* 表格行保持完整 */
+  tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* 確保表格頭部不被分割 */
+  thead {
+    display: table-header-group;
+  }
+
+  /* 確保表格尾部不被分割 */
+  tfoot {
+    display: table-footer-group;
+  }
+
+  html {
+    font-size: 9px !important;
+  }
+
+  body {
+    background: white !important;
+    color: #1a1a1a !important;
+    font-size: 9px !important;
+    line-height: 1.25 !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  /* 隱藏不需要列印的元素 */
+  .print\:hidden,
+  nav,
+  input[type="range"],
+  .sticky {
+    display: none !important;
+  }
+
+  /* 列印時隱藏按鈕（但保留 print:block 的元素） */
+  button:not(.print-keep) {
+    display: none !important;
+  }
+
+  /* 強制顯示列印專用元素 */
+  .print\:block {
+    display: block !important;
+  }
+
+  .hidden.print\:block {
+    display: block !important;
+  }
+
+  .print\:inline {
+    display: inline !important;
+  }
+
+  .hidden.print\:inline {
+    display: inline !important;
+  }
+
+  /* 容器全寬 */
+  .container {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    break-inside: avoid !important;
+  }
+
+  /* 卡片和主要區塊保持完整 */
+  .bg-card,
+  .rounded-lg,
+  .border {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* 卡片和區塊 — 白底 */
+  .bg-card,
+  .bg-background,
+  .bg-secondary\/30,
+  .bg-secondary\/20,
+  .bg-card\/50 {
+    background: white !important;
+  }
+
+  /* 文字顏色強制黑色系 */
+  .text-foreground,
+  .text-card-foreground,
+  .font-mono {
+    color: #1a1a1a !important;
+  }
+
+  .text-muted-foreground {
+    color: #555 !important;
+  }
+
+  .text-primary,
+  .text-emerald-400 {
+    color: #0d7a3f !important;
+  }
+
+  .text-destructive,
+  .text-red-400 {
+    color: #c0392b !important;
+  }
+
+  .text-accent,
+  .text-amber-400 {
+    color: #b8860b !important;
+  }
+
+  .text-blue-400 {
+    color: #2563eb !important;
+  }
+
+  /* 邊框 */
+  .border-border {
+    border-color: #ccc !important;
+  }
+
+  /* 圓角縮小 */
+  .rounded-xl,
+  .rounded-lg,
+  .rounded-md,
+  .rounded-t-xl,
+  .rounded-b-xl {
+    border-radius: 1px !important;
+  }
+
+  /* 表格列印優化 */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 8px !important;
+  }
+
+  th, td {
+    padding: 2px 3px !important;
+    border-bottom: 1px solid #ddd !important;
+  }
+
+  th {
+    font-weight: 700 !important;
+    background: #f5f5f5 !important;
+  }
+
+  /* 避免區塊被分頁切斷 - 但允許大區塊跨頁 */
+  .grid > * {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* grid 列印 */
+  .print\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .print\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .print\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .print\:grid-cols-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+
+  /* 間距壓縮 */
+  .space-y-6 > * + * {
+    margin-top: 0.3rem !important;
+  }
+
+  .space-y-4 > * + * {
+    margin-top: 0.2rem !important;
+  }
+
+  .space-y-3 > * + * {
+    margin-top: 0.15rem !important;
+  }
+
+  .space-y-2 > * + * {
+    margin-top: 0.1rem !important;
+  }
+
+  .gap-6 {
+    gap: 0.3rem !important;
+  }
+
+  .gap-4 {
+    gap: 0.2rem !important;
+  }
+
+  .gap-3 {
+    gap: 0.15rem !important;
+  }
+
+  .gap-2 {
+    gap: 0.1rem !important;
+  }
+
+  .p-5, .p-6 {
+    padding: 0.25rem !important;
+  }
+
+  .p-4 {
+    padding: 0.2rem !important;
+  }
+
+  .p-3 {
+    padding: 0.15rem !important;
+  }
+
+  .py-6, .py-4 {
+    padding-top: 0.15rem !important;
+    padding-bottom: 0.15rem !important;
+  }
+
+  .mb-6 {
+    margin-bottom: 0.25rem !important;
+  }
+
+  .mb-4 {
+    margin-bottom: 0.2rem !important;
+  }
+
+  .mt-4 {
+    margin-top: 0.2rem !important;
+  }
+
+  .pt-4 {
+    padding-top: 0.2rem !important;
+  }
+
+  /* 字體大小壓縮 */
+  .text-2xl {
+    font-size: 12px !important;
+  }
+
+  .text-xl {
+    font-size: 11px !important;
+  }
+
+  .text-lg {
+    font-size: 10px !important;
+  }
+
+  .text-base {
+    font-size: 9px !important;
+  }
+
+  .text-sm {
+    font-size: 8px !important;
+  }
+
+  .text-xs {
+    font-size: 7px !important;
+  }
+
+  .text-\[10px\] {
+    font-size: 6px !important;
+  }
+
+  .text-\[9px\] {
+    font-size: 7px !important;
+  }
+
+  /* ResultCard 列印優化 */
+  .bg-card.border.border-border.rounded-lg.p-4 {
+    padding: 3px 5px !important;
+    border: 1px solid #ccc !important;
+  }
+
+  /* 隱藏 Navigation 和 sticky header */
+  .sticky {
+    position: static !important;
+  }
+
+  /* 確保 backdrop-blur 不影響列印 */
+  .backdrop-blur-sm {
+    backdrop-filter: none !important;
+  }
+
+  /* 營建雙平台列印時展開所有 tab 內容 */
+  section.hidden.print\:block {
+    display: block !important;
+  }
+
+  /* 營建雙平台 header 列印樣式 */
+  header.border-b {
+    position: static !important;
+    border-bottom: 1px solid #ccc !important;
+    padding: 0.15rem 0 !important;
+  }
+
+  /* CurrencyInput 列印時顯示為純文字 */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* 情境比較卡片壓縮 */
+  .grid.grid-cols-2.gap-3 {
+    gap: 0.15rem !important;
+  }
+
+  /* 延後付款明細列印時強制顯示 */
+  .bg-secondary\/30.rounded-lg.p-3 {
+    display: block !important;
+    background: transparent !important;
+    padding: 0.15rem !important;
+  }
+
+  /* 合建頁面列印時 input 隱藏，顯示純文字 */
+  input:not([type="checkbox"]):not([type="radio"]) {
+    display: none !important;
+  }
+
+  /* 合建頁面列印時的參數顯示 */
+  .print\:py-\[1px\] {
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+  }
+}

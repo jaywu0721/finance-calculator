@@ -10,9 +10,9 @@ export default function IntegratedCalculator() {
     <div className="min-h-screen bg-background text-foreground">
       <Navigation />
       
-      <div className="container mx-auto px-4 py-6">
-        {/* 頁籤導航 */}
-        <div className="flex gap-2 mb-6 border-b border-border">
+      <div className="container mx-auto px-4 py-6 print:px-0 print:py-0">
+        {/* 頁籤導航 - 列印時隱藏 */}
+        <div className="flex gap-2 mb-6 border-b border-border print:hidden">
           <button
             onClick={() => setActiveTab('joint-development')}
             className={`px-4 py-2 font-semibold transition-colors ${

@@ -17,11 +17,11 @@ export default function ResultCard({ label, value, suffix = '元', variant = 'de
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4">
-      <p className="text-xs text-muted-foreground mb-1 tracking-wide">{label}</p>
-      <p className={`font-mono font-bold ${size === 'lg' ? 'text-2xl' : 'text-lg'} ${colorMap[variant]}`}>
+    <div className="bg-card border border-border rounded-lg p-4 print:p-1 print:border-gray-300">
+      <p className="text-xs text-muted-foreground mb-1 tracking-wide print:mb-0 print:text-[7px]">{label}</p>
+      <p className={`font-mono font-bold ${size === 'lg' ? 'text-2xl' : 'text-lg'} ${colorMap[variant]} print:text-[9px]`}>
         {value < 0 ? '-' : ''}{formatCurrency(Math.abs(value))}
-        <span className="text-xs text-muted-foreground ml-1 font-normal">{suffix}</span>
+        <span className="text-xs text-muted-foreground ml-1 font-normal print:text-[6px]">{suffix}</span>
       </p>
     </div>
   );
