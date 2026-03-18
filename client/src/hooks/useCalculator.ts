@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 
 /* ===================================================================
- * 營建雙平台資金缺口與稅務規劃試算 — 計算引擎 v4
+ * 營建雙平台資金缺口與稅務規劃試算 — 計算引擎 v5
  *
  * 關鍵修正：
- * - 代銷費用 = 建案總銷售金額 × 代銷費用比例（自動成為廣告費）
+ * - 代銷費用 = 建案總銷售金額 × 代銷費用比例 × 銷售完成率
+ *   （代銷費用應隨銷售完成率動態變化，以準確計算資金缺口）
  * - 營造廠延後付款 = (施工成本估算 + 營造廠成本調整金額) × 營造廠延後付款比例
  * - 新增警示：營造廠成本調整金額不應超過施工成本估算
  * =================================================================== */
@@ -169,7 +170,9 @@ export function useCalculator() {
     // ═══ 銷售參數計算 ═══
     const actualSalesAmount = i.totalSalesAmount * i.salesCompletionRate;
     const preSaleRevenue = actualSalesAmount * i.preSaleRevenueRate;
-    const agencyFee = actualSalesAmount * i.agencyFeeRate;  // 代銷費用 = 總銷金額 × 比例
+    // 修正 v5：代銷費用應隨銷售完成率動態變化
+    // 代銷費用 = 建案總銷售金額 × 代銷費用比例 × 銷售完成率
+    const agencyFee = i.totalSalesAmount * i.agencyFeeRate * i.salesCompletionRate;
     const agencyFeeTotal = i.agencyFeePerUnit * i.totalUnits;
 
     // ═══ 檢查警示：營造廠成本調整金額是否超過施工成本 ═══
