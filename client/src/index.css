@@ -137,9 +137,9 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 6mm 8mm;
-    orphans: 3;
-    widows: 3;
+    margin: 4mm 6mm;
+    orphans: 2;
+    widows: 2;
   }
 
   /* 全域重設 */
@@ -182,15 +182,30 @@
   }
 
   html {
-    font-size: 9px !important;
+    font-size: 8px !important;
   }
 
   body {
     background: white !important;
     color: #1a1a1a !important;
-    font-size: 9px !important;
-    line-height: 1.25 !important;
+    font-size: 8px !important;
+    line-height: 1.1 !important;
     -webkit-print-color-adjust: exact !important;
+  }
+
+  /* 表格極度壓縮 */
+  table {
+    font-size: 7.5px !important;
+    line-height: 1 !important;
+  }
+
+  th, td {
+    padding: 1px 2px !important;
+    line-height: 1 !important;
+  }
+
+  tr {
+    height: auto !important;
   }
 
   /* 隱藏不需要列印的元素 */
@@ -237,6 +252,53 @@
   .border {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
+  }
+
+  /* 標題壓縮 */
+  h1, h2, h3 {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.1 !important;
+  }
+
+  h1 {
+    font-size: 9px !important;
+  }
+
+  h2 {
+    font-size: 8px !important;
+  }
+
+  h3 {
+    font-size: 7.5px !important;
+  }
+
+  /* 段落和 div 壓縮 */
+  p, div {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+  }
+
+  /* 間距全面壓縮 */
+  .space-y-3 {
+    gap: 0 !important;
+  }
+
+  .gap-2 {
+    gap: 0 !important;
+  }
+
+  .mb-3, .mb-4, .mb-6 {
+    margin-bottom: 1px !important;
+  }
+
+  .mt-1, .mt-2, .mt-4, .mt-6 {
+    margin-top: 1px !important;
+  }
+
+  .p-2, .p-3, .p-4, .p-6 {
+    padding: 1px !important;
   }
 
   /* 卡片和區塊 — 白底 */

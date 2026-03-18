@@ -341,32 +341,32 @@ export default function KuseJointDevelopment() {
             </div>
 
             {/* 合建分配與稅務明細 */}
-            <h3 className="font-bold mb-3 text-base print:text-sm print:mb-1">合建分配與稅務明細</h3>
+            <h3 className="font-bold mb-3 text-base print:text-[7px] print:mb-0">合建分配與稅務明細</h3>
             <div className="overflow-x-auto print:overflow-visible print:break-inside-avoid">
-              <table className="w-full text-sm print:text-xs print:break-inside-avoid">
+              <table className="w-full text-sm print:text-[7px] print:break-inside-avoid">
                 <thead>
-                  <tr className="border-b-2 border-border">
-                    <th className="text-left py-2 px-2 font-semibold">角色</th>
-                    <th className="text-right py-2 px-2 font-semibold">稅前盈餘</th>
-                    <th className="text-right py-2 px-2 font-semibold">兩稅合一(20%)</th>
-                    <th className="text-right py-2 px-2 font-semibold">個人分配額(28%)</th>
-                    <th className="text-right py-2 px-2 font-semibold">稅後盈餘</th>
+                  <tr className="border-b-2 border-border print:py-0">
+                    <th className="text-left py-2 px-2 font-semibold print:py-0 print:px-1">角色</th>
+                    <th className="text-right py-2 px-2 font-semibold print:py-0 print:px-1">稅前盈餘</th>
+                    <th className="text-right py-2 px-2 font-semibold print:py-0 print:px-1">兩稅合一(20%)</th>
+                    <th className="text-right py-2 px-2 font-semibold print:py-0 print:px-1">個人分配額(28%)</th>
+                    <th className="text-right py-2 px-2 font-semibold print:py-0 print:px-1">稅後盈餘</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-b border-border">
-                    <td className="py-2 px-2">建設</td>
-                    <td className="text-right py-2 px-2 font-mono">{formatCurrency(result.devPretax)}</td>
-                    <td className="text-right py-2 px-2 font-mono">{formatCurrency(result.devTwoTax)}</td>
-                    <td className="text-right py-2 px-2 font-mono">{formatCurrency(result.devDistTax)}</td>
-                    <td className="text-right py-2 px-2 font-mono">{formatCurrency(result.devAfterTax)}</td>
+                  <tr className="border-b border-border print:py-0">
+                    <td className="py-2 px-2 print:py-0 print:px-1">建設</td>
+                    <td className="text-right py-2 px-2 font-mono print:py-0 print:px-1">{formatCurrency(result.devPretax)}</td>
+                    <td className="text-right py-2 px-2 font-mono print:py-0 print:px-1">{formatCurrency(result.devTwoTax)}</td>
+                    <td className="text-right py-2 px-2 font-mono print:py-0 print:px-1">{formatCurrency(result.devDistTax)}</td>
+                    <td className="text-right py-2 px-2 font-mono print:py-0 print:px-1">{formatCurrency(result.devAfterTax)}</td>
                   </tr>
-                  <tr className="border-b border-border">
-                    <td className="py-2 px-2">地主</td>
-                    <td className="text-right py-2 px-2 font-mono">{formatCurrency(result.landlordPretax)}</td>
-                    <td className="text-right py-2 px-2 font-mono">{formatCurrency(result.landlordTwoTax)}</td>
-                    <td className="text-right py-2 px-2 font-mono">—</td>
-                    <td className="text-right py-2 px-2 font-mono">{formatCurrency(result.landlordAfterTax)}</td>
+                  <tr className="border-b border-border print:py-0">
+                    <td className="py-2 px-2 print:py-0 print:px-1">地主</td>
+                    <td className="text-right py-2 px-2 font-mono print:py-0 print:px-1">{formatCurrency(result.landlordPretax)}</td>
+                    <td className="text-right py-2 px-2 font-mono print:py-0 print:px-1">{formatCurrency(result.landlordTwoTax)}</td>
+                    <td className="text-right py-2 px-2 font-mono print:py-0 print:px-1">—</td>
+                    <td className="text-right py-2 px-2 font-mono print:py-0 print:px-1">{formatCurrency(result.landlordAfterTax)}</td>
                   </tr>
                 </tbody>
               </table>
