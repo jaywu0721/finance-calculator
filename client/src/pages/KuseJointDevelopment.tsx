@@ -227,7 +227,7 @@ export default function KuseJointDevelopment() {
                   value={inputs.targetMargin * 100}
                   min={9}
                   max={15}
-                  step={0.5}
+                  step={0.1}
                   onChange={v => updateInput('targetMargin', v / 100)}
                   unit="%"
                   decimals={1}
