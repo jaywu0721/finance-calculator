@@ -211,6 +211,15 @@ export default function Home() {
             <CurrencyInput label="建融利率" value={inputs.constructionLoanRate * 100} onChange={v => updateInput('constructionLoanRate', v / 100)} suffix="%" decimals={2} hint="例：4.5" />
             <CurrencyInput label="興建時間" value={inputs.constructionDurationYears} onChange={v => updateInput('constructionDurationYears', v)} suffix="年" decimals={1} hint="例：2.5" />
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 print:grid-cols-4 print:gap-2">
+            <CurrencyInput label="土融撥款" value={inputs.landLoan} onChange={v => updateInput('landLoan', v)} hint="土地融資撥款" />
+            <CurrencyInput label="土融利率" value={inputs.landLoanRate * 100} onChange={v => updateInput('landLoanRate', v / 100)} suffix="%" decimals={2} hint="例：4.5" />
+            <CurrencyInput label="土地時間" value={inputs.landDurationYears} onChange={v => updateInput('landDurationYears', v)} suffix="年" decimals={1} hint="例：2" />
+            <div className="bg-secondary/30 border border-border rounded-lg p-3 print:border-0 print:bg-transparent">
+              <p className="text-xs text-muted-foreground mb-1">土融利息（自動計算）</p>
+              <p className="font-mono font-bold text-lg text-destructive">{formatCurrency(inputs.landLoanInterest)}</p>
+            </div>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 print:grid-cols-2 print:gap-2">
             <div className="bg-secondary/30 border border-border rounded-lg p-4 print:border-0 print:bg-transparent">
               <p className="text-xs text-muted-foreground mb-1">建融利息（自動計算）</p>
@@ -218,9 +227,49 @@ export default function Home() {
               <p className="text-[10px] text-muted-foreground mt-1">公式：建融撥款 × 利率 × 0.5 × 時間</p>
             </div>
             <div className="bg-secondary/30 border border-border rounded-lg p-4 print:border-0 print:bg-transparent">
-              <p className="text-xs text-muted-foreground mb-1">撥款前代銷費用（自動計算）</p>
-              <p className="font-mono font-bold text-lg text-destructive">{formatCurrency(result.salesInfo.agencyFeePreDelivery)}</p>
-              <p className="text-[10px] text-muted-foreground mt-1">公式：總銷 × 代銷比例 × 完成率 × (1-交屋後比例)</p>
+              <p className="text-xs text-muted-foreground mb-1">土融利息（自動計算）</p>
+              <p className="font-mono font-bold text-lg text-destructive">{formatCurrency(inputs.landLoanInterest)}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">公式：土融撥款 × 利率 × 時間</p>
+            </div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-border print:border-t print:mt-2 print:pt-2">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">撥款前代銷費用（自動計算）</span>
+                <span className="font-mono">{formatCurrency(result.salesInfo.agencyFeePreDelivery)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">計算模式</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => updateInput('agencyPreDeliveryMode', 'ratio')}
+                    className={`px-2 py-1 text-xs rounded transition-colors ${
+                      inputs.agencyPreDeliveryMode === 'ratio'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                    }`}
+                  >
+                    比例計算
+                  </button>
+                  <button
+                    onClick={() => updateInput('agencyPreDeliveryMode', 'manual')}
+                    className={`px-2 py-1 text-xs rounded transition-colors ${
+                      inputs.agencyPreDeliveryMode === 'manual'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                    }`}
+                  >
+                    直接輸入
+                  </button>
+                </div>
+              </div>
+              {inputs.agencyPreDeliveryMode === 'manual' && (
+                <CurrencyInput
+                  label="撥款前代銷費用（直接輸入）"
+                  value={inputs.agencyFeePreDeliveryManual}
+                  onChange={v => updateInput('agencyFeePreDeliveryManual', v)}
+                />
+              )}
             </div>
           </div>
           <div className="mt-4 pt-4 border-t border-border print:border-t print:mt-2 print:pt-2">
@@ -228,7 +277,7 @@ export default function Home() {
               <span className="text-sm text-muted-foreground">建設總支出（實際）</span>
               <span className="font-mono font-bold text-lg text-destructive">{formatCurrency(result.actual.totalExpense)} 元</span>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-2">計算：施工成本 + 建融利息 + 撥款前代銷費用</p>
+            <p className="text-[10px] text-muted-foreground mt-2">計算：施工成本 + 建融利息 + 土融利息 + 撥款前代銷費用</p>
           </div>
         </section>
 

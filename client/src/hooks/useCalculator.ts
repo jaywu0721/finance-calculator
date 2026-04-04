@@ -1,18 +1,21 @@
 import { useState, useMemo } from 'react';
 
 /* ===================================================================
- * 營建雙平台資金缺口與稅務規劃試算 — 計算引擎 v6
+ * 營建雙平台資金缺口與稅務規劃試算 — 計算引擎 v8
  *
+ * v8 修正：
+ * - 新增土融撥款與土融利率參數
+ * - 土融利息 = 土融撥款 × 土融利率 × 土地時間（僅在建設支出中計算）
+ * - 撥款前代銷費用支援兩種計算模式：
+ *   模式1：代銷費用 × (1 - 交屋後支付比例)
+ *   模式2：直接輸入撥款前代銷費用
+ * - 代銷交屋後支付支援兩種計算方式：
+ *   方式1：代銷費用 × 交屋後支付比例
+ *   方式2：總銷金額 × 代銷費用比例 - 撥款前代銷費用
+ * - 建設總支出新增土融利息
  * v7 修正：
  * - 客戶代辦費收入 = 每戶代辦費 × 總戶數 × 銷售完成率
  * - 新增「建設交屋後款項(衛浴等)」欄位，僅在情境二可延後付款
- * v6 修正：
- * - 項目3：建設總支出 = 施工成本 + 建融利息 + 撥款前代銷費用
- *   撥款前代銷費用 = 總銷 × 代銷比例 × 完成率 × (1 - 交屋後支付比例)
- * - 項目5：建融撥款欄位在建設支出與資金流入共用
- * - 項目6：營造廠成本調整 + 建設端成本調整 → 合併為「增加成本」
- *          營造廠延後付款比例 → 營造廠延後付款金額
- * - 項目7：移除稅務效益分析
  * =================================================================== */
 
 export interface ProjectInputs {
@@ -26,11 +29,22 @@ export interface ProjectInputs {
   preSaleRevenueRate: number;       // 預收房屋款比例（0-1）- 可自訂
   agencyFeeRate: number;            // 代銷費用比例（0-1）- 自動成為廣告費
 
+  // ── 撥款前代銷費用計算模式 ──
+  agencyPreDeliveryMode: 'ratio' | 'manual';  // 'ratio' = 用比例計算, 'manual' = 直接輸入
+  agencyPostDeliveryMode: 'ratio' | 'formula'; // 'ratio' = 用比例計算, 'formula' = 用公式計算
+  agencyFeePreDeliveryManual: number;  // 直接輸入的撥款前代銷費用
+
   // ── 建設總支出（實際成本）──
   constructionCost: number;
   constructionLoanRate: number;       // 建融利率（0-1）
   constructionDurationYears: number;  // 興建時間（年）
   constructionLoanInterest: number;   // 自動計算：建融額度 × 建融利率 × 1/2 × 興建時間
+
+  // ── 土融撥款與土融利息 ──
+  landLoan: number;                   // 土融撥款
+  landLoanRate: number;               // 土融利率（0-1）
+  landDurationYears: number;          // 土地時間（年）
+  landLoanInterest: number;           // 自動計算：土融撥款 × 土融利率 × 土地時間
 
   // ── 建融撥款（建設支出與資金流入共用）──
   constructionLoan: number;
@@ -41,7 +55,7 @@ export interface ProjectInputs {
   vendorFinalPayment: number;
   registrationFees: number;
   constructorFixedExpense: number;
-  agencyPostDeliveryPct: number;
+  agencyPostDeliveryPct: number;     // 代銷交屋後支付比例（用於模式1）
 
   // ── 成本優化設定（合併為增加成本 + 營造廠延後付款金額）──
   extraCost: number;                   // 增加成本（原營造廠+建設端合併）
@@ -76,6 +90,7 @@ export interface CalculationResult {
     agencyFee: number;
     agencyFeePreDelivery: number;
     agencyFeeTotal: number;
+    landLoanInterest: number;
   };
   warnings: {
     constructorOverflow: boolean;
@@ -93,10 +108,19 @@ const defaultInputs: ProjectInputs = {
   preSaleRevenueRate: 0.15,         // 預收 15%
   agencyFeeRate: 0.05,              // 代銷費用 5%
 
+  agencyPreDeliveryMode: 'ratio',    // 預設使用比例計算
+  agencyPostDeliveryMode: 'ratio',   // 預設使用比例計算
+  agencyFeePreDeliveryManual: 0,     // 直接輸入的撥款前代銷費用
+
   constructionCost: 218991554,
   constructionLoanRate: 0.045,        // 預設 4.5%
   constructionDurationYears: 2.5,     // 預設 2.5 年
   constructionLoanInterest: 4702500,  // 自動計算
+
+  landLoan: 0,                        // 土融撥款
+  landLoanRate: 0.045,                // 土融利率 4.5%
+  landDurationYears: 2,               // 土地時間 2 年
+  landLoanInterest: 0,                // 自動計算
 
   constructionLoan: 104500000,
 
@@ -126,6 +150,10 @@ export function useCalculator() {
       if (key === 'constructionLoanRate' || key === 'constructionDurationYears' || key === 'constructionLoan') {
         updated.constructionLoanInterest = updated.constructionLoan * updated.constructionLoanRate * 0.5 * updated.constructionDurationYears;
       }
+      // 自動計算土融利息（土融撥款 × 土融利率 × 土地時間）
+      if (key === 'landLoan' || key === 'landLoanRate' || key === 'landDurationYears') {
+        updated.landLoanInterest = updated.landLoan * updated.landLoanRate * updated.landDurationYears;
+      }
       return updated;
     });
   };
@@ -133,6 +161,7 @@ export function useCalculator() {
   const resetInputs = () => {
     const reset = { ...defaultInputs };
     reset.constructionLoanInterest = reset.constructionLoan * reset.constructionLoanRate * 0.5 * reset.constructionDurationYears;
+    reset.landLoanInterest = reset.landLoan * reset.landLoanRate * reset.landDurationYears;
     setInputs(reset);
   };
 
@@ -144,9 +173,18 @@ export function useCalculator() {
     const preSaleRevenue = actualSalesAmount * i.preSaleRevenueRate;
     // 代銷費用 = 建案總銷售金額 × 代銷費用比例 × 銷售完成率
     const agencyFee = i.totalSalesAmount * i.agencyFeeRate * i.salesCompletionRate;
-    // 撥款前代銷費用 = 代銷費用 × (1 - 交屋後支付比例)
-    const agencyFeePreDelivery = agencyFee * (1 - i.agencyPostDeliveryPct);
-    // v7修正：客戶代辦費收入 = 每戶代辦費 × 總戶數 × 銷售完成率
+    
+    // 撥款前代銷費用 - 支援兩種計算模式
+    const agencyFeePreDelivery = i.agencyPreDeliveryMode === 'manual'
+      ? i.agencyFeePreDeliveryManual
+      : agencyFee * (1 - i.agencyPostDeliveryPct);
+    
+    // 代銷交屋後支付 - 支援兩種計算方式
+    const agencyDeferred = i.agencyPostDeliveryMode === 'formula'
+      ? (i.totalSalesAmount * i.agencyFeeRate * i.salesCompletionRate) - agencyFeePreDelivery
+      : agencyFee * i.agencyPostDeliveryPct;
+    
+    // 客戶代辦費收入 = 每戶代辦費 × 總戶數 × 銷售完成率
     const agencyFeeTotal = i.agencyFeePerUnit * i.totalUnits * i.salesCompletionRate;
 
     // ═══ 檢查警示：增加成本是否超過施工成本 ═══
@@ -156,12 +194,10 @@ export function useCalculator() {
       : '';
 
     // ═══ 情境一：實際成本（資金缺口）═══
-    // 項目3修正：建設總支出 = 施工成本 + 建融利息 + 撥款前代銷費用
-    const actualExpense = i.constructionCost + i.constructionLoanInterest + agencyFeePreDelivery;
+    // 項目3修正：建設總支出 = 施工成本 + 建融利息 + 土融利息 + 撥款前代銷費用
+    const actualExpense = i.constructionCost + i.constructionLoanInterest + i.landLoanInterest + agencyFeePreDelivery;
     // 項目5：建融撥款同時出現在支出（利息計算）和流入
     const actualRevenue = i.constructionLoan + preSaleRevenue + agencyFeeTotal;
-
-    const agencyDeferred = agencyFee * i.agencyPostDeliveryPct;
 
     const actualDeferredItems: DeferredItem[] = [
       { label: '鋼筋材料', amount: i.steelMaterial },
@@ -213,6 +249,7 @@ export function useCalculator() {
         agencyFee,
         agencyFeePreDelivery,
         agencyFeeTotal,
+        landLoanInterest: i.landLoanInterest,
       },
       warnings: {
         constructorOverflow,
