@@ -75,15 +75,63 @@ const DEFAULT_INPUTS: KuseJDInputs = {
   extraTaxRate: 0.09,
 };
 
-export function useKuseJointDevelopment() {
-  const [inputs, setInputs] = useState<KuseJDInputs>(DEFAULT_INPUTS);
+// ═══ localStorage 參數記憶功能 ═══
+const STORAGE_KEY = 'kuse_joint_development_inputs_v9';
+
+function loadInputsFromStorage(): KuseJDInputs {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // 合併存儲的數據與默認值，確保新增的字段有默認值
+      return { ...DEFAULT_INPUTS, ...parsed };
+    }
+  } catch (error) {
+    console.error('Failed to load inputs from storage:', error);
+  }
+  return DEFAULT_INPUTS;
+}
+
+function saveInputsToStorage(inputs: KuseJDInputs): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(inputs));
+  } catch (error) {
+    console.error('Failed to save inputs to storage:', error);
+  }
+}
+
+export interface UseKuseJointDevelopmentReturn {
+  inputs: KuseJDInputs;
+  updateInput: (key: keyof KuseJDInputs, value: any) => void;
+  resetInputs: () => void;
+  clearMemory: () => void;
+  result: KuseJDResults;
+}
+
+export function useKuseJointDevelopment(): UseKuseJointDevelopmentReturn {
+  const [inputs, setInputs] = useState<KuseJDInputs>(() => loadInputsFromStorage());
 
   const updateInput = useCallback((key: keyof KuseJDInputs, value: any) => {
-    setInputs(prev => ({ ...prev, [key]: value }));
+    setInputs(prev => {
+      const updated = { ...prev, [key]: value };
+      // 自動保存到 localStorage
+      saveInputsToStorage(updated);
+      return updated;
+    });
   }, []);
 
   const resetInputs = useCallback(() => {
     setInputs(DEFAULT_INPUTS);
+    // 清除 localStorage
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+      console.error('Failed to clear storage:', error);
+    }
+  }, []);
+
+  const clearMemory = useCallback(() => {
+    resetInputs();
   }, []);
 
   const calculate = useCallback((): KuseJDResults => {
@@ -165,6 +213,7 @@ export function useKuseJointDevelopment() {
     inputs,
     updateInput,
     resetInputs,
+    clearMemory,
     result,
   };
 }

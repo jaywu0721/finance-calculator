@@ -13,6 +13,8 @@ import { useState, useMemo } from 'react';
  *   方式1：代銷費用 × 交屋後支付比例
  *   方式2：總銷金額 × 代銷費用比例 - 撥款前代銷費用
  * - 建設總支出新增土融利息
+ * v9 新增：
+ * - 參數記憶功能：使用 localStorage 自動保存和恢復用戶輸入
  * v7 修正：
  * - 客戶代辦費收入 = 每戶代辦費 × 總戶數 × 銷售完成率
  * - 新增「建設交屋後款項(衛浴等)」欄位，僅在情境二可延後付款
@@ -140,8 +142,41 @@ const defaultInputs: ProjectInputs = {
   dividendTaxRate: 0.28,
 };
 
-export function useCalculator() {
-  const [inputs, setInputs] = useState<ProjectInputs>(defaultInputs);
+// ═══ localStorage 參數記憶功能 ═══
+const STORAGE_KEY = 'tax_calculator_inputs_v9';
+
+function loadInputsFromStorage(): ProjectInputs {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // 合併存儲的數據與默認值，確保新增的字段有默認值
+      return { ...defaultInputs, ...parsed };
+    }
+  } catch (error) {
+    console.error('Failed to load inputs from storage:', error);
+  }
+  return defaultInputs;
+}
+
+function saveInputsToStorage(inputs: ProjectInputs): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(inputs));
+  } catch (error) {
+    console.error('Failed to save inputs to storage:', error);
+  }
+}
+
+export interface UseCalculatorReturn {
+  inputs: ProjectInputs;
+  updateInput: <K extends keyof ProjectInputs>(key: K, value: ProjectInputs[K]) => void;
+  resetInputs: () => void;
+  clearMemory: () => void;
+  result: CalculationResult;
+}
+
+export function useCalculator(): UseCalculatorReturn {
+  const [inputs, setInputs] = useState<ProjectInputs>(() => loadInputsFromStorage());
 
   const updateInput = <K extends keyof ProjectInputs>(key: K, value: ProjectInputs[K]) => {
     setInputs(prev => {
@@ -154,6 +189,8 @@ export function useCalculator() {
       if (key === 'landLoan' || key === 'landLoanRate' || key === 'landDurationYears') {
         updated.landLoanInterest = updated.landLoan * updated.landLoanRate * updated.landDurationYears;
       }
+      // 自動保存到 localStorage
+      saveInputsToStorage(updated);
       return updated;
     });
   };
@@ -163,6 +200,16 @@ export function useCalculator() {
     reset.constructionLoanInterest = reset.constructionLoan * reset.constructionLoanRate * 0.5 * reset.constructionDurationYears;
     reset.landLoanInterest = reset.landLoan * reset.landLoanRate * reset.landDurationYears;
     setInputs(reset);
+    // 清除 localStorage
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+      console.error('Failed to clear storage:', error);
+    }
+  };
+
+  const clearMemory = () => {
+    resetInputs();
   };
 
   const result = useMemo<CalculationResult>(() => {
@@ -258,5 +305,11 @@ export function useCalculator() {
     };
   }, [inputs]);
 
-  return { inputs, updateInput, resetInputs, result };
+  return {
+    inputs,
+    updateInput,
+    resetInputs,
+    clearMemory,
+    result,
+  };
 }

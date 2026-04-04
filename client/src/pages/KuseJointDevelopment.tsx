@@ -15,7 +15,7 @@ interface SavedScenario {
 }
 
 export default function KuseJointDevelopment() {
-  const { inputs, updateInput, resetInputs, result } = useKuseJointDevelopment();
+  const { inputs, updateInput, resetInputs, clearMemory, result } = useKuseJointDevelopment();
   const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>([]);
   const [showScenarios, setShowScenarios] = useState(false);
   const [nextId, setNextId] = useState(1);
@@ -72,6 +72,10 @@ export default function KuseJointDevelopment() {
           <Button onClick={resetInputs} variant="outline" size="sm" className="flex items-center gap-2">
             <RotateCcw className="w-4 h-4" />
             重設
+          </Button>
+          <Button onClick={clearMemory} variant="outline" size="sm" className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50">
+            <RotateCcw className="w-4 h-4" />
+            清除記憶
           </Button>
         </div>
 

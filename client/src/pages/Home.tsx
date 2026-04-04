@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
  */
 
 export default function Home() {
-  const { inputs, updateInput, resetInputs, result } = useCalculator();
+  const { inputs, updateInput, resetInputs, clearMemory, result } = useCalculator();
   const [activeTab, setActiveTab] = useState('sales');
 
   const handlePrint = () => {
@@ -48,6 +48,10 @@ export default function Home() {
             <Button variant="outline" size="sm" onClick={resetInputs} className="gap-1.5">
               <RotateCcw className="w-3.5 h-3.5" />
               重設
+            </Button>
+            <Button variant="outline" size="sm" onClick={clearMemory} className="gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50">
+              <RotateCcw className="w-3.5 h-3.5" />
+              清除記憶
             </Button>
           </div>
         </div>
