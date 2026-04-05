@@ -197,7 +197,7 @@ export default function KuseJointDevelopment() {
                 <div className="print:hidden flex-1"><CurrencyInput value={inputs.buildRate} onChange={v => updateInput('buildRate', v)} suffix="（例0.03）" decimals={4} /></div>
               </div>
               <div className="flex items-center gap-2 print:py-[1px]">
-                <label className="text-sm w-40 shrink-0 print:w-28 print:text-[9px]">建物利息2</label>
+                <label className="text-sm w-40 shrink-0 print:w-28 print:text-[9px]">建設融資利息(土融不納入計算)</label>
                 <span className="hidden print:inline font-mono text-[9px]">{formatCurrency(inputs.interest2)} 元</span>
                 <div className="print:hidden flex-1"><CurrencyInput value={inputs.interest2} onChange={v => updateInput('interest2', v)} suffix="元" /></div>
               </div>
@@ -289,6 +289,9 @@ export default function KuseJointDevelopment() {
                 <p className="text-xs text-muted-foreground mt-1">
                   增加成本 / 建物成本1：{result.build1 > 0 ? (result.extraCost / result.build1 * 100).toFixed(2) : '0.00'}%
                 </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  每月增加成本：{formatCurrency(Math.round(result.extraCost / (inputs.buildYears * 12)))} 元/月
+                </p>
               </div>
             </div>
 
@@ -379,7 +382,7 @@ export default function KuseJointDevelopment() {
             {/* 底部說明 */}
             <div className="mt-4 p-3 bg-secondary/20 rounded-lg text-xs text-muted-foreground print:bg-transparent print:border print:border-border print:mt-1 print:p-1 print:break-inside-avoid">
               <p>
-                建物成本2反推（建設端基準）：建物成本2 = 建設端分配銷售額 − 建設端分攤代銷費 − 建物利息2 − 目標利潤率×建設端分配銷售額。
+                建物成本2反推（建設端基準）：建物成本2 = 建設端分配銷売額 − 建設端分摔代銷費 − 建設融資利息(土融不納入計算) − 目標利潤率×建設端分配銷売額。
                 其中「建設端分配銷售額」= 總銷×建設比例。
               </p>
             </div>
