@@ -57,7 +57,6 @@ export interface ProjectInputs {
   vendorFinalPayment: number;
   registrationFees: number;
   constructorFixedExpense: number;
-  agencyPostDeliveryPct: number;     // 代銷交屋後支付比例（用於模式1）
 
   // ── 成本優化設定（合併為增加成本 + 營造廠延後付款金額）──
   extraCost: number;                   // 增加成本（原營造廠+建設端合併）
@@ -131,7 +130,7 @@ const defaultInputs: ProjectInputs = {
   vendorFinalPayment: 3000000,
   registrationFees: 2500000,
   constructorFixedExpense: 5600000,
-  agencyPostDeliveryPct: 0.4,
+
 
   extraCost: 65000000,                // 增加成本（合併）
   constructorDeferredAmount: 9000000, // 營造廠延後付款金額
@@ -224,12 +223,12 @@ export function useCalculator(): UseCalculatorReturn {
     // 撥款前代銷費用 - 支援兩種計算模式
     const agencyFeePreDelivery = i.agencyPreDeliveryMode === 'manual'
       ? i.agencyFeePreDeliveryManual
-      : agencyFee * (1 - i.agencyPostDeliveryPct);
+      : agencyFee * 0.6;  // 預設不可延後支付比例為 60%
     
     // 代銷交屋後支付 - 支援兩種計算方式
     const agencyDeferred = i.agencyPostDeliveryMode === 'formula'
       ? (i.totalSalesAmount * i.agencyFeeRate * i.salesCompletionRate) - agencyFeePreDelivery
-      : agencyFee * i.agencyPostDeliveryPct;
+      : agencyFee - agencyFeePreDelivery;
     
     // 客戶代辦費收入 = 每戶代辦費 × 總戶數 × 銷售完成率
     const agencyFeeTotal = i.agencyFeePerUnit * i.totalUnits * i.salesCompletionRate;
@@ -252,7 +251,6 @@ export function useCalculator(): UseCalculatorReturn {
       { label: '部分廠商交屋尾款', amount: i.vendorFinalPayment },
       { label: '建物登記/代書/記帳費', amount: i.registrationFees },
       { label: '營造廠固定支出', amount: i.constructorFixedExpense },
-      { label: '代銷交屋後支付', amount: agencyDeferred },
     ];
     const actualDeferred = actualDeferredItems.reduce((s, d) => s + d.amount, 0);
     const actualGap = actualExpense - actualRevenue - actualDeferred;
@@ -268,7 +266,6 @@ export function useCalculator(): UseCalculatorReturn {
       { label: '部分廠商交屋尾款', amount: i.vendorFinalPayment },
       { label: '建物登記/代書/記帳費', amount: i.registrationFees },
       { label: '營造廠固定支出', amount: i.constructorFixedExpense },
-      { label: '代銷交屋後支付', amount: agencyDeferred },
       { label: '營造廠延後付款金額', amount: i.constructorDeferredAmount },
       { label: '建設交屋後款項(衛浴等)', amount: i.postDeliveryBathroom },
     ];

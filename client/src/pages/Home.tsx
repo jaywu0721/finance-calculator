@@ -73,8 +73,7 @@ export default function Home() {
             </div>
             <CurrencyInput label="總戶數" value={inputs.totalUnits} onChange={v => updateInput('totalUnits', v)} suffix="戶" />
             <CurrencyInput label="每戶代辦費" value={inputs.agencyFeePerUnit} onChange={v => updateInput('agencyFeePerUnit', v)} />
-            <CurrencyInput label="代銷交屋後支付比例" value={inputs.agencyPostDeliveryPct * 100} onChange={v => updateInput('agencyPostDeliveryPct', v / 100)} suffix="%" />
-            <CurrencyInput label="建案總銷售金額" value={inputs.totalSalesAmount} onChange={v => updateInput('totalSalesAmount', v)} />
+            <CurrencyInput label="建案總銷売金額" value={inputs.totalSalesAmount} onChange={v => updateInput('totalSalesAmount', v)} />
           </div>
         </section>
 
@@ -283,7 +282,7 @@ export default function Home() {
               <p className="text-muted-foreground mb-1">撥款前代銷費用（自動計算）</p>
               <p className="font-mono font-bold text-destructive">{formatCurrency(result.salesInfo.agencyFeePreDelivery)}</p>
               <p className="text-muted-foreground mt-1">
-                計算式：代銷費用總額 × (1 - 交屋後支付比例) = {formatCurrency(result.salesInfo.agencyFee)} × {(1 - inputs.agencyPostDeliveryPct).toFixed(2)} = {formatCurrency(result.salesInfo.agencyFeePreDelivery)}
+                計算式：代銷費用總額 = {formatCurrency(result.salesInfo.agencyFeePreDelivery)}
               </p>
             </div>
           </div>
@@ -378,7 +377,6 @@ export default function Home() {
             <CurrencyInput label="部分廠商交屋尾款" value={inputs.vendorFinalPayment} onChange={v => updateInput('vendorFinalPayment', v)} />
             <CurrencyInput label="建物登記/代書費" value={inputs.registrationFees} onChange={v => updateInput('registrationFees', v)} />
             <CurrencyInput label="營造廠固定支出" value={inputs.constructorFixedExpense} onChange={v => updateInput('constructorFixedExpense', v)} />
-            <CurrencyInput label="代銷交屋後支付比例" value={inputs.agencyPostDeliveryPct * 100} onChange={v => updateInput('agencyPostDeliveryPct', v / 100)} suffix="%" />
           </div>
 
           {/* 計算結果 */}
