@@ -44,7 +44,20 @@ export default function KuseJointDevelopment() {
   const fmtPct = (v: number, decimals = 1) => `${(v * 100).toFixed(decimals)}%`;
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-6 print:p-0 print:min-h-0 print:break-inside-avoid">
+    <>
+      <style>{`
+        @media print {
+          @page {
+            size: A4 landscape;
+            margin: 0.5cm;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        }
+      `}</style>
+      <div className="min-h-screen bg-background text-foreground p-6 print:p-0 print:min-h-0 print:break-inside-avoid">
       <div className="max-w-full mx-auto">
         {/* 標題 */}
         <div className="mb-4 print:mb-1">
@@ -486,6 +499,7 @@ export default function KuseJointDevelopment() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }

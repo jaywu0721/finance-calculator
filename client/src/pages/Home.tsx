@@ -25,7 +25,20 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background print:min-h-0">
+    <>
+      <style>{`
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 0.5cm;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        }
+      `}</style>
+      <div className="min-h-screen bg-background print:min-h-0">
       <Navigation />
 
       {/* Header */}
@@ -438,6 +451,7 @@ export default function Home() {
           </div>
         </section>
       </main>
-    </div>
+      </div>
+    </>
   );
 }
